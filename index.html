@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>E-Logbook Maintenance General Assembly</title>
   
-  <!-- Tailwind CSS -->
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Phosphor Icons -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -21,20 +21,20 @@
         <i class="ph ph-wrench text-xl"></i>
       </div>
       <div>
-        <h1 class="text-sm md:text-base font-bold leading-tight">E-Logbook Maintenance GA</h1>
-        <p class="text-[10px] text-slate-400">Digital Logbook & Live Downtime KPI</p>
+        <h1 class="text-sm md:text-base font-bold leading-tight">E-Logbook Maintenance General Assembly</h1>
+        <p class="text-[10px] text-slate-400">Pencatatan Kerusakan, Root Cause & Countermeasure</p>
       </div>
     </div>
     
     <div class="flex items-center gap-2 flex-wrap">
-      <!-- Badge Status Koneksi -->
+      <!-- Status Cloud Badge -->
       <span id="cloud-badge" class="px-2.5 py-1 text-[10px] rounded font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1">
         <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-        <span>Menghubungkan...</span>
+        <span>Menghubungkan ke Cloud...</span>
       </span>
 
-      <!-- Tombol Sync -->
-      <button onclick="fetchCloudData()" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition" title="Sinkronkan data server">
+      <!-- Tombol Refresh / Sinkronisasi -->
+      <button onclick="fetchCloudData()" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition" title="Refresh data dari Google Sheets">
         <i id="sync-icon" class="ph ph-arrows-clockwise text-sm"></i>
         <span class="hidden sm:inline">Refresh</span>
       </button>
@@ -49,7 +49,7 @@
 
   <main class="max-w-7xl mx-auto p-3 md:p-6 space-y-4">
 
-    <!-- KPI Ringkas -->
+    <!-- KPI Ringkas (MTTR, MTBF, Availability, Total Downtime) -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
       <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Breakdown</span>
@@ -93,12 +93,12 @@
           <!-- Tanggal & Shift -->
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Tanggal</label>
-              <input type="date" id="formDate" required class="w-full text-xs px-2.5 py-2 border rounded-lg bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500" />
+              <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">DATE (Tanggal)</label>
+              <input type="date" id="formDate" required class="w-full text-xs px-2.5 py-1.5 border rounded-lg bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div>
-              <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Work Operation (Shift)</label>
-              <select id="formShift" class="w-full text-xs px-2.5 py-2 border rounded-lg bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500">
+              <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">WORK OPERATION</label>
+              <select id="formShift" class="w-full text-xs px-2.5 py-1.5 border rounded-lg bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="S1">S1 (Shift 1)</option>
                 <option value="S2">S2 (Shift 2)</option>
                 <option value="S3">S3 (Shift 3)</option>
@@ -111,7 +111,7 @@
           <div class="space-y-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="block text-[10px] font-bold text-slate-600 uppercase">Area</label>
+                <label class="block text-[10px] font-bold text-slate-600 uppercase">AREA</label>
                 <select id="formArea" onchange="onAreaChange()" required class="w-full text-xs p-1.5 border rounded bg-white outline-none focus:ring-1 focus:ring-blue-500">
                   <option value="">-- Pilih Area --</option>
                   <option value="TRIM 1">TRIM 1</option>
@@ -123,7 +123,7 @@
                 </select>
               </div>
               <div>
-                <label class="block text-[10px] font-bold text-slate-600 uppercase">Line</label>
+                <label class="block text-[10px] font-bold text-slate-600 uppercase">LINE</label>
                 <select id="formLine" onchange="onLineChange()" required class="w-full text-xs p-1.5 border rounded bg-white outline-none focus:ring-1 focus:ring-blue-500">
                   <option value="">-- Pilih Line --</option>
                 </select>
@@ -132,13 +132,13 @@
 
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="block text-[10px] font-bold text-slate-600 uppercase">Station</label>
+                <label class="block text-[10px] font-bold text-slate-600 uppercase">STATION</label>
                 <select id="formStation" onchange="onStationChange()" required class="w-full text-xs p-1.5 border rounded bg-white outline-none focus:ring-1 focus:ring-blue-500">
                   <option value="">-- Pilih Station --</option>
                 </select>
               </div>
               <div>
-                <label class="block text-[10px] font-bold text-slate-600 uppercase">Machine</label>
+                <label class="block text-[10px] font-bold text-slate-600 uppercase">MACHINE</label>
                 <select id="formMachine" required class="w-full text-xs p-1.5 border rounded bg-white outline-none focus:ring-1 focus:ring-blue-500">
                   <option value="">-- Pilih Machine --</option>
                 </select>
@@ -146,12 +146,31 @@
             </div>
           </div>
 
+          <!-- Problem, Root Analysis, Countermeasure -->
+          <div class="space-y-2 bg-amber-50/50 p-2.5 rounded-xl border border-amber-200">
+            <div>
+              <label class="block text-[10px] font-bold text-amber-900 uppercase">PROBLEM (Masalah / Gejala)</label>
+              <textarea id="formProblem" rows="2" placeholder="Contoh: Baut macet / sensor proximity error" required
+                        class="w-full text-xs p-2 border rounded-lg bg-white outline-none focus:ring-1 focus:ring-amber-500"></textarea>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-amber-900 uppercase">ROOT ANALISYS (Akar Penyebab)</label>
+              <textarea id="formRoot" rows="2" placeholder="Contoh: Kabel sensor terjepit / kotoran debu baut"
+                        class="w-full text-xs p-2 border rounded-lg bg-white outline-none focus:ring-1 focus:ring-amber-500"></textarea>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-amber-900 uppercase">COUNTERMEASURE (Tindakan Penanggulangan)</label>
+              <textarea id="formCounter" rows="2" placeholder="Contoh: Ganti kabel sensor & pasang pelindung kabel"
+                        class="w-full text-xs p-2 border rounded-lg bg-white outline-none focus:ring-1 focus:ring-amber-500"></textarea>
+            </div>
+          </div>
+
           <!-- Rincian Waktu Perbaikan (Menit) -->
           <div class="border border-slate-200 rounded-xl p-2.5 bg-blue-50/20 space-y-1.5">
             <div class="flex justify-between items-center text-xs font-bold text-slate-700">
-              <span>Rincian Repair Time (Menit)</span>
+              <span>REPAIR TIME (Menit)</span>
               <span class="text-amber-800 bg-amber-100 px-2 py-0.5 rounded text-[11px]">
-                Total: <strong id="sumTotalRepair">3</strong> mnt
+                TOTAL: <strong id="sumTotalRepair">3</strong> mnt
               </span>
             </div>
             <div class="grid grid-cols-3 gap-1.5 text-center">
@@ -160,11 +179,11 @@
                 <input type="number" id="timeAnalysis" min="0" value="1" oninput="calcTotal()" class="w-full text-xs p-1.5 border rounded text-center" />
               </div>
               <div>
-                <label class="block text-[9px] text-slate-500 font-semibold">Part Prep</label>
+                <label class="block text-[9px] text-slate-500 font-semibold">Part prep</label>
                 <input type="number" id="timePart" min="0" value="0" oninput="calcTotal()" class="w-full text-xs p-1.5 border rounded text-center" />
               </div>
               <div>
-                <label class="block text-[9px] text-slate-500 font-semibold">Tool Prep</label>
+                <label class="block text-[9px] text-slate-500 font-semibold">Tool prep</label>
                 <input type="number" id="timeTool" min="0" value="0" oninput="calcTotal()" class="w-full text-xs p-1.5 border rounded text-center" />
               </div>
               <div>
@@ -181,7 +200,7 @@
           <!-- PIC & Status -->
           <div class="grid grid-cols-3 gap-2">
             <div>
-              <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">PIC Local</label>
+              <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">PIC LOCAL</label>
               <input type="text" id="picLocal" placeholder="Nama teknisi" required class="w-full text-xs p-1.5 border rounded outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
             <div>
@@ -209,21 +228,21 @@
         <div class="p-3.5 border-b bg-slate-50 flex justify-between items-center">
           <div>
             <h3 class="font-bold text-xs uppercase tracking-wider text-slate-700">Database Log Masuk</h3>
-            <p class="text-[10px] text-slate-400">Tersinkronisasi antar perangkat</p>
+            <p class="text-[10px] text-slate-400">Rekap problem, root cause & repair time</p>
           </div>
           <span class="text-xs text-slate-500 font-semibold">
             Total: <strong id="tableTotalRows" class="text-blue-600 font-bold">0</strong> baris
           </span>
         </div>
 
-        <div class="overflow-x-auto flex-1 max-h-[520px]">
+        <div class="overflow-x-auto flex-1 max-h-[620px]">
           <table class="w-full text-left text-xs">
             <thead class="bg-slate-100 text-slate-600 sticky top-0 border-b z-10">
               <tr>
                 <th class="p-2">No</th>
                 <th class="p-2">Shift</th>
-                <th class="p-2">Area / Line</th>
-                <th class="p-2">Machine</th>
+                <th class="p-2">Area / Machine</th>
+                <th class="p-2">Problem & Analisis</th>
                 <th class="p-2 text-center">Downtime</th>
                 <th class="p-2">PIC</th>
                 <th class="p-2">Status</th>
@@ -231,7 +250,7 @@
               </tr>
             </thead>
             <tbody id="tableBody" class="divide-y divide-slate-100">
-              <tr><td colspan="8" class="p-6 text-center text-slate-400">Memuat data...</td></tr>
+              <tr><td colspan="8" class="p-6 text-center text-slate-400">Memuat data dari Google Sheets...</td></tr>
             </tbody>
           </table>
         </div>
@@ -242,12 +261,8 @@
   </main>
 
   <script>
-    // -------------------------------------------------------------
-    // KONFIGURASI DATABASE CLOUD
-    // Tempelkan URL Google Apps Script Anda di sini. 
-    // Jika masih kosong, sistem otomatis memakai penyimpanan lokal (LocalStorage).
-    // -------------------------------------------------------------
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWl4Fk4h3ATAGB_n0T7_GbcN4DU4opaL9O4DR1hD7Q1NJFqMg5WZxagakwzgPkMvR4/exec";
+    // URL GOOGLE APPS SCRIPT ANDA (SUDAH TERPASANG)
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzv_OHYhYRpi1_C1z4xsRet0_Ynoxpz97W0QzhM8G1Cjry2VFX0NF5uRXWvzh8H2mKV/exec";
 
     // Master Data Hierarki GA Sesuai Excel
     const masterHierarchy = {
@@ -285,21 +300,15 @@
 
     let dataset = [];
 
-    // Inisialisasi awal saat halaman dimuat
+    // Inisialisasi saat web pertama kali dibuka
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('formDate').valueAsDate = new Date();
       fetchCloudData();
-      // Polling setiap 30 detik jika Google Script URL sudah diisi
-      if (isCloudConfigured()) {
-        setInterval(fetchCloudData, 30000);
-      }
+      // Polling data otomatis setiap 30 detik agar data antar device selalu sinkron
+      setInterval(fetchCloudData, 30000);
     });
 
-    function isCloudConfigured() {
-      return GOOGLE_SCRIPT_URL && !GOOGLE_SCRIPT_URL.includes("ISI_DENGAN_URL");
-    }
-
-    // Cascading Dropdown Handlers
+    // Cascading Dropdown
     function onAreaChange() {
       const a = document.getElementById('formArea').value;
       const l = document.getElementById('formLine');
@@ -346,7 +355,7 @@
       }
     }
 
-    // Hitung Total Menit Perbaikan Otomatis
+    // Auto-sum repair time (menit)
     function calcTotal() {
       const a = parseFloat(document.getElementById('timeAnalysis').value) || 0;
       const p = parseFloat(document.getElementById('timePart').value) || 0;
@@ -358,21 +367,11 @@
       return total;
     }
 
-    // Ambil Data (dari Cloud atau LocalStorage)
+    // Mengambil data dari Google Sheets
     async function fetchCloudData() {
       const badge = document.getElementById('cloud-badge');
       const syncIcon = document.getElementById('sync-icon');
       syncIcon.classList.add('animate-spin');
-
-      if (!isCloudConfigured()) {
-        // Mode offline/lokal
-        dataset = JSON.parse(localStorage.getItem('ga_maintenance_logs')) || [];
-        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-400"></span><span>Mode LocalStorage</span>`;
-        badge.className = "px-2.5 py-1 text-[10px] rounded font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center gap-1";
-        syncIcon.classList.remove('animate-spin');
-        renderUI();
-        return;
-      }
 
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL);
@@ -382,22 +381,22 @@
         badge.className = "px-2.5 py-1 text-[10px] rounded font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1";
         renderUI();
       } catch (err) {
-        // Jika fetch cloud gagal, baca cache lokal
+        // Jika jaringan down, fallback ke local storage
         dataset = JSON.parse(localStorage.getItem('ga_maintenance_logs')) || [];
-        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-400"></span><span>Cloud Offline (Local Mode)</span>`;
-        badge.className = "px-2.5 py-1 text-[10px] rounded font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center gap-1";
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span><span>Offline (Memori Lokal)</span>`;
+        badge.className = "px-2.5 py-1 text-[10px] rounded font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1";
         renderUI();
       } finally {
         syncIcon.classList.remove('animate-spin');
       }
     }
 
-    // Simpan Data Form
+    // Mengirim form ke Google Sheets
     async function submitForm(e) {
       e.preventDefault();
       const btn = document.getElementById('btnSubmit');
       btn.disabled = true;
-      btn.innerHTML = `<i class="ph ph-spinner animate-spin text-base"></i> Menyimpan...`;
+      btn.innerHTML = `<i class="ph ph-spinner animate-spin text-base"></i> Menyimpan ke Cloud...`;
 
       const newRecord = {
         id: Date.now(),
@@ -407,6 +406,9 @@
         line: document.getElementById('formLine').value,
         station: document.getElementById('formStation').value,
         machine: document.getElementById('formMachine').value,
+        problem: document.getElementById('formProblem').value.trim(),
+        rootAnalysis: document.getElementById('formRoot').value.trim(),
+        countermeasure: document.getElementById('formCounter').value.trim(),
         analysis: parseFloat(document.getElementById('timeAnalysis').value) || 0,
         partPrep: parseFloat(document.getElementById('timePart').value) || 0,
         toolPrep: parseFloat(document.getElementById('timeTool').value) || 0,
@@ -419,31 +421,31 @@
         netHours: 7
       };
 
-      // Simpan selalu ke LocalStorage (sebagai cadangan)
+      // Backup cadangan ke LocalStorage perangkat
       let localData = JSON.parse(localStorage.getItem('ga_maintenance_logs')) || [];
       localData.unshift(newRecord);
       localStorage.setItem('ga_maintenance_logs', JSON.stringify(localData));
 
-      if (isCloudConfigured()) {
-        try {
-          await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newRecord)
-          });
-          alert("Berhasil! Data tersimpan di server pusat.");
-          setTimeout(fetchCloudData, 1200);
-        } catch (err) {
-          alert("Koneksi gagal, data tetap aman tersimpan di memori perangkat ini.");
-          fetchCloudData();
-        }
-      } else {
-        alert("Data berhasil disimpan ke memori lokal!");
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors', // Penting untuk bypass CORS Google Apps Script
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newRecord)
+        });
+
+        alert("Data berhasil tersimpan ke Google Sheets!");
+        // Refresh tabel
+        setTimeout(fetchCloudData, 1500);
+      } catch (err) {
+        alert("Gagal terhubung ke Google Sheets, data tetap aman di perangkat lokal.");
         fetchCloudData();
       }
 
-      // Reset form ringan
+      // Reset isian teks
+      document.getElementById('formProblem').value = "";
+      document.getElementById('formRoot').value = "";
+      document.getElementById('formCounter').value = "";
       document.getElementById('timeExec').value = "2";
       document.getElementById('timePart').value = "0";
       document.getElementById('timeTool').value = "0";
@@ -454,15 +456,13 @@
       btn.innerHTML = `<i class="ph ph-floppy-disk text-base"></i> Simpan Data Log Perbaikan`;
     }
 
-    // Hapus baris catatan lokal
     function deleteRecord(id) {
-      if (!confirm("Hapus baris catatan ini dari tampilan?")) return;
+      if (!confirm("Hapus baris catatan ini dari tampilan? (Catatan di Google Sheets tetap tersimpan sebagai arsip)")) return;
       dataset = dataset.filter(r => r.id !== id);
-      localStorage.setItem('ga_maintenance_logs', JSON.stringify(dataset));
       renderUI();
     }
 
-    // Perbarui Tampilan UI & KPI
+    // Render KPI & Tabel
     function renderUI() {
       const count = dataset.length;
       const totalDown = dataset.reduce((s, d) => s + (Number(d.total) || 0), 0);
@@ -478,24 +478,25 @@
       const avail = plannedHours > 0 ? (100 - ((totalDown / 60) / plannedHours * 100)).toFixed(1) : 100;
       document.getElementById('stat-avail').textContent = `${avail}%`;
 
-      // Render Baris Tabel
       const tbody = document.getElementById('tableBody');
       if (dataset.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-slate-400">Belum ada data rekaman. Silakan lakukan input pertama di form kiri.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-slate-400">Belum ada data rekaman di database cloud. Silakan submit data pertama.</td></tr>';
         return;
       }
 
       tbody.innerHTML = dataset.map((d, idx) => `
-        <tr class="hover:bg-slate-50 transition border-b">
+        <tr class="hover:bg-slate-50 transition border-b align-top">
           <td class="p-2 text-slate-400 font-mono">${dataset.length - idx}</td>
           <td class="p-2 font-semibold text-slate-700">${d.shift}</td>
           <td class="p-2">
             <span class="font-bold text-slate-800">${d.area}</span>
-            <div class="text-[10px] text-slate-400">${d.line}</div>
+            <div class="text-[10px] text-slate-500">${d.line} &bull; ${d.station}</div>
+            <div class="text-[11px] font-semibold text-blue-700 mt-0.5">${d.machine}</div>
           </td>
-          <td class="p-2 font-medium text-slate-800">
-            <div>${d.machine}</div>
-            <div class="text-[10px] text-slate-400">St: ${d.station}</div>
+          <td class="p-2 max-w-xs">
+            <div class="font-medium text-slate-900 leading-snug">${d.problem || "-"}</div>
+            ${d.rootAnalysis ? `<div class="text-[10px] text-amber-800 bg-amber-50 rounded px-1.5 py-0.5 mt-1"><strong>Root:</strong> ${d.rootAnalysis}</div>` : ''}
+            ${d.countermeasure ? `<div class="text-[10px] text-emerald-800 bg-emerald-50 rounded px-1.5 py-0.5 mt-0.5"><strong>CM:</strong> ${d.countermeasure}</div>` : ''}
           </td>
           <td class="p-2 text-center font-bold text-rose-600">${d.total} mnt</td>
           <td class="p-2 text-slate-600">
@@ -508,7 +509,7 @@
             </span>
           </td>
           <td class="p-2 text-center">
-            <button onclick="deleteRecord(${d.id})" class="text-slate-400 hover:text-rose-600 transition" title="Hapus">
+            <button onclick="deleteRecord(${d.id})" class="text-slate-400 hover:text-rose-600 transition" title="Hapus dari tampilan">
               <i class="ph ph-trash text-base"></i>
             </button>
           </td>
@@ -516,7 +517,7 @@
       `).join('');
     }
 
-    // Fungsi Export Excel Standar General Assembly
+    // Export Excel sesuai format template
     function exportDataToExcel() {
       if (!dataset || dataset.length === 0) {
         alert("Belum ada data untuk diekspor!");
@@ -530,6 +531,9 @@
         "LINE": item.line,
         "STATION": item.station,
         "MACHINE": item.machine,
+        "PROBLEM": item.problem || "-",
+        "ROOT ANALISYS": item.rootAnalysis || "-",
+        "COUNTERMEASURE": item.countermeasure || "-",
         "REPAIR TIME Analysis (menit)": item.analysis || 0,
         "REPAIR TIME Part preparation (menit)": item.partPrep || 0,
         "REPAIR TIME Tool preparation (menit)": item.toolPrep || 0,
