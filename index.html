@@ -27,7 +27,7 @@
     </div>
     
     <div class="flex items-center gap-2 flex-wrap">
-      <!-- Status Koneksi Cloud -->
+      <!-- Status Cloud Connection -->
       <span id="cloud-badge" class="px-2.5 py-1 text-[10px] rounded font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1">
         <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
         <span>Menghubungkan...</span>
@@ -49,7 +49,7 @@
 
   <main class="max-w-7xl mx-auto p-3 md:p-6 space-y-4">
 
-    <!-- KPI Ringkas -->
+    <!-- KPI Cards Ringkas -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
       <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Breakdown</span>
@@ -215,7 +215,7 @@
             </div>
           </div>
 
-          <!-- KOTAK KHUSUS UPLOAD FOTO DOKUMENTASI (SANGAT JELAS & MUDAH DIAKSES) -->
+          <!-- KOTAK KHUSUS UPLOAD FOTO DOKUMENTASI (SANGAT JELAS & RESPONSIF) -->
           <div class="p-3 bg-slate-50 border-2 border-dashed border-blue-300 rounded-xl space-y-2">
             <div class="flex justify-between items-center">
               <label class="text-[11px] font-bold text-blue-900 flex items-center gap-1.5">
@@ -312,8 +312,8 @@
   </div>
 
   <script>
-    // URL Web App Google Apps Script
-    const GOOGLE_SCRIPT_URL = "https://https://script.google.com/macros/s/AKfycbwZhJr7yPMrxHsdmEVKNO454NoHNZCPvFMgL9cDQz97hX1DAFOetidBE76M-fijrdsC/exec";
+    // URL Web App Google Apps Script Anda
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLgg3v9VWRPETxt7nhLFPsufYcdhg2thGOOAWq3EnoFTFfAwVtqYJBvrhbOLU2T49m/exec";
 
     const masterHierarchy = {
       "TRIM 1": { lines: ["Trim 1"], stations: { "Trim 1": ["TL8", "TL10", "Loading"] }, machines: { "TL8": ["Conveyor Trim"], "TL10": ["Lifter Trim 1"], "Loading": ["Hopper"] } },
@@ -338,10 +338,10 @@
     window.addEventListener('DOMContentLoaded', () => {
       setRealTimeClock();
       fetchCloudData();
-      setInterval(fetchCloudData, 30000);
+      setInterval(fetchCloudData, 30000); // Polling otomatis tiap 30 detik
     });
 
-    // Penanganan Foto & Kompresi Cepat
+    // Otomatis kompresi gambar di client-side
     function previewSelectedPhoto(input) {
       const file = input.files[0];
       if (!file) {
@@ -443,6 +443,7 @@
       return total;
     }
 
+    // Mengambil data dari Google Sheets (metode JSONP)
     function fetchCloudData() {
       const badge = document.getElementById('cloud-badge');
       const syncIcon = document.getElementById('sync-icon');
@@ -480,6 +481,7 @@
       document.body.appendChild(script);
     }
 
+    // Menyimpan data perbaikan baru
     async function submitForm(e) {
       e.preventDefault();
       const btn = document.getElementById('btnSubmit');
@@ -511,6 +513,7 @@
         netHours: 7
       };
 
+      // Backup ke cache lokal
       let localData = JSON.parse(localStorage.getItem('ga_maintenance_logs')) || [];
       localData.push({ ...payload, photoUrl: currentPhotoBase64, sheetRowIndex: Date.now() });
       localStorage.setItem('ga_maintenance_logs', JSON.stringify(localData));
@@ -530,7 +533,7 @@
         fetchCloudData();
       }
 
-      // Reset form
+      // Reset form input
       document.getElementById('formProblem').value = "";
       document.getElementById('formRoot').value = "";
       document.getElementById('formCounter').value = "";
@@ -546,6 +549,7 @@
       btn.innerHTML = `<i class="ph ph-floppy-disk text-base"></i> Simpan Data Log Perbaikan`;
     }
 
+    // Menghapus data logbook secara bersih
     async function deleteRecord(sheetRowIndex) {
       if (!sheetRowIndex) {
         alert("Data ini belum terindeks di server cloud. Silakan refresh halaman terlebih dahulu.");
@@ -576,6 +580,7 @@
       }
     }
 
+    // Render antarmuka & perhitungan KPI
     function renderUI() {
       const count = dataset.length;
       const totalDown = dataset.reduce((s, d) => s + (Number(d.total) || 0), 0);
@@ -620,7 +625,7 @@
             <div>${d.picLocal}</div>
             <div class="text-[10px] text-slate-400">VMT: ${d.picVmt}</div>
           </td>
-          <!-- KOLOM FOTO DI ANTARA PIC DAN STATUS -->
+          <!-- KOLOM FOTO BERADA DI ANTARA PIC DAN STATUS -->
           <td class="p-2 text-center">
             ${d.photoUrl ? `
               <button onclick="openModal('${d.photoUrl}')" class="inline-block p-1 bg-slate-100 hover:bg-blue-100 rounded border transition" title="Lihat Foto">
@@ -642,6 +647,7 @@
       `).join('');
     }
 
+    // Ekspor data ke file Excel (.xlsx)
     function exportDataToExcel() {
       if (!dataset || dataset.length === 0) {
         alert("Belum ada data untuk diekspor!");
