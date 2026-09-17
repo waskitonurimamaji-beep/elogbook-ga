@@ -14,7 +14,7 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-12">
 
-  <!-- Header & Navigasi -->
+  <!-- Header -->
   <header class="bg-slate-900 text-white px-4 md:px-6 py-3.5 shadow sticky top-0 z-50 flex flex-wrap justify-between items-center gap-3">
     <div class="flex items-center gap-2.5">
       <div class="p-1.5 bg-blue-600 rounded-lg">
@@ -30,7 +30,7 @@
       <!-- Status Cloud Badge -->
       <span id="cloud-badge" class="px-2.5 py-1 text-[10px] rounded font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1">
         <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-        <span>Menghubungkan ke Cloud...</span>
+        <span>Menghubungkan...</span>
       </span>
 
       <!-- Tombol Refresh -->
@@ -251,7 +251,7 @@
               </tr>
             </thead>
             <tbody id="tableBody" class="divide-y divide-slate-100">
-              <tr><td colspan="9" class="p-6 text-center text-slate-400">Memuat data dari Google Sheets...</td></tr>
+              <tr><td colspan="9" class="p-6 text-center text-slate-400">Menghubungkan ke server...</td></tr>
             </tbody>
           </table>
         </div>
@@ -262,7 +262,7 @@
   </main>
 
   <script>
-    // URL Google Apps Script Anda
+    // URL Google Apps Script Anda yang aktif
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzv_OHYhYRpi1_C1z4xsRet0_Ynoxpz97W0QzhM8G1Cjry2VFX0NF5uRXWvzh8H2mKV/exec";
 
     // Master Data Hierarki GA Sesuai Excel
@@ -283,7 +283,7 @@
       setInterval(fetchCloudData, 30000); // Polling otomatis setiap 30 detik
     });
 
-    // Cascading Dropdowns
+    // Cascading Dropdown
     function onAreaChange() {
       const a = document.getElementById('formArea').value;
       const l = document.getElementById('formLine');
@@ -342,28 +342,37 @@
       return total;
     }
 
-    // Ambil Data dari Google Sheets
+    // Mengambil data dari Google Sheets dengan redirect follow & fallback
     async function fetchCloudData() {
       const badge = document.getElementById('cloud-badge');
       const syncIcon = document.getElementById('sync-icon');
       syncIcon.classList.add('animate-spin');
 
       try {
-        const res = await fetch(GOOGLE_SCRIPT_URL);
+        const res = await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'GET',
+          redirect: 'follow'
+        });
+
+        if (!res.ok) throw new Error("HTTP error " + res.status);
         const data = await res.json();
         dataset = Array.isArray(data) ? data.reverse() : [];
+        
         badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>Cloud Connected</span>`;
         badge.className = "px-2.5 py-1 text-[10px] rounded font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1";
         renderUI();
       } catch (err) {
-        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-400"></span><span>Koneksi Terputus</span>`;
-        badge.className = "px-2.5 py-1 text-[10px] rounded font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center gap-1";
+        console.warn("Fetch cloud gagal, membaca cache lokal:", err);
+        dataset = JSON.parse(localStorage.getItem('ga_maintenance_logs')) || [];
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span><span>Mode Cache Lokal</span>`;
+        badge.className = "px-2.5 py-1 text-[10px] rounded font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1";
+        renderUI();
       } finally {
         syncIcon.classList.remove('animate-spin');
       }
     }
 
-    // Simpan Data Form ke Google Sheets
+    // Simpan Data Baru ke Google Sheets
     async function submitForm(e) {
       e.preventDefault();
       const btn = document.getElementById('btnSubmit');
@@ -393,21 +402,28 @@
         netHours: 7
       };
 
+      // Backup lokal
+      let localData = JSON.parse(localStorage.getItem('ga_maintenance_logs')) || [];
+      localData.unshift({ ...payload, sheetRowIndex: Date.now() });
+      localStorage.setItem('ga_maintenance_logs', JSON.stringify(localData));
+
       try {
         await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
           mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
+          redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload)
         });
 
         alert("Data berhasil tersimpan ke Google Sheets!");
         setTimeout(fetchCloudData, 1500);
       } catch (err) {
-        alert("Gagal mengirim data ke Google Sheets.");
+        alert("Gagal terhubung, data tetap tersimpan di memori perangkat ini.");
+        fetchCloudData();
       }
 
-      // Reset form
+      // Reset form input
       document.getElementById('formProblem').value = "";
       document.getElementById('formRoot').value = "";
       document.getElementById('formCounter').value = "";
@@ -432,12 +448,13 @@
         await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
           mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
+          redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({ action: "delete", rowIndex: sheetRowIndex })
         });
         setTimeout(fetchCloudData, 1500);
       } catch (err) {
-        alert("Gagal menghapus dari server.");
+        alert("Gagal menghapus dari Google Sheets.");
         fetchCloudData();
       }
     }
@@ -496,7 +513,7 @@
       `).join('');
     }
 
-    // Export Data ke Excel (.xlsx) Sesuai Urutan Kolom Asli
+    // Export Data ke Excel (.xlsx) Sesuai Urutan Kolom Gambar
     function exportDataToExcel() {
       if (!dataset || dataset.length === 0) {
         alert("Belum ada data untuk diekspor!");
