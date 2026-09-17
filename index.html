@@ -22,12 +22,12 @@
       </div>
       <div>
         <h1 class="text-sm md:text-base font-bold leading-tight">E-Logbook Maintenance General Assembly</h1>
-        <p class="text-[10px] text-slate-400">Pencatatan Real-Time Kerusakan, Root Cause & Countermeasure</p>
+        <p class="text-[10px] text-slate-400">Pencatatan Real-Time Kerusakan, Root Cause, Foto & Countermeasure</p>
       </div>
     </div>
     
     <div class="flex items-center gap-2 flex-wrap">
-      <!-- Status Cloud Badge -->
+      <!-- Status Koneksi Cloud -->
       <span id="cloud-badge" class="px-2.5 py-1 text-[10px] rounded font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1">
         <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
         <span>Menghubungkan...</span>
@@ -90,7 +90,7 @@
         </div>
 
         <form id="repairForm" onsubmit="submitForm(event)" class="space-y-3">
-          <!-- WAKTU: Tanggal, Time (Jam:Menit), & Shift -->
+          <!-- Waktu Real-Time -->
           <div class="grid grid-cols-3 gap-2">
             <div>
               <label class="block text-[10px] font-bold text-slate-600 mb-0.5 uppercase">DATE</label>
@@ -166,12 +166,12 @@
             </div>
             <div>
               <label class="block text-[10px] font-bold text-amber-900 uppercase">COUNTERMEASURE (Tindakan)</label>
-              <textarea id="formCounter" rows="2" placeholder="Contoh: Bersihkan optik & kalibrasi ulang"
+              <textarea id="formCounter" rows="2" placeholder="Contoh: Bersihkan sensor & tes ulang"
                         class="w-full text-xs p-2 border rounded-lg bg-white outline-none focus:ring-1 focus:ring-amber-500"></textarea>
             </div>
           </div>
 
-          <!-- Rincian Waktu Perbaikan (Menit) -->
+          <!-- Waktu Perbaikan -->
           <div class="border border-slate-200 rounded-xl p-2.5 bg-blue-50/20 space-y-1.5">
             <div class="flex justify-between items-center text-xs font-bold text-slate-700">
               <span>REPAIR TIME (Menit)</span>
@@ -203,8 +203,8 @@
             </div>
           </div>
 
-          <!-- PIC & Status -->
-          <div class="grid grid-cols-3 gap-2">
+          <!-- PIC, FOTO & STATUS (Urutan: PIC VMT -> FOTO -> STATUS) -->
+          <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">PIC LOCAL</label>
               <input type="text" id="picLocal" placeholder="Nama teknisi" required class="w-full text-xs p-1.5 border rounded outline-none focus:ring-1 focus:ring-blue-500" />
@@ -212,6 +212,16 @@
             <div>
               <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">PIC VMT</label>
               <input type="text" id="picVmt" placeholder="Nama VMT" class="w-full text-xs p-1.5 border rounded outline-none focus:ring-1 focus:ring-blue-500" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 items-end">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-700 mb-0.5 flex items-center gap-1">
+                <i class="ph ph-camera text-blue-600"></i> FOTO DOKUMENTASI
+              </label>
+              <input type="file" id="formPhoto" accept="image/*" capture="environment" onchange="previewSelectedPhoto(this)"
+                     class="w-full text-[10px] file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
             </div>
             <div>
               <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Status</label>
@@ -221,6 +231,12 @@
                 <option value="NG">NG</option>
               </select>
             </div>
+          </div>
+
+          <!-- Pratinjau Foto Kecil Sebelum Disimpan -->
+          <div id="photoPreviewBox" class="hidden flex items-center gap-2 p-2 bg-slate-50 border rounded-lg">
+            <img id="photoPreviewImg" class="w-12 h-12 object-cover rounded shadow border" />
+            <span class="text-[10px] text-slate-500">Foto siap diunggah ke Google Drive</span>
           </div>
 
           <button type="submit" id="btnSubmit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5">
@@ -234,7 +250,7 @@
         <div class="p-3.5 border-b bg-slate-50 flex justify-between items-center">
           <div>
             <h3 class="font-bold text-xs uppercase tracking-wider text-slate-700">DATABASE LOG MASUK</h3>
-            <p class="text-[10px] text-slate-400">Rekap waktu riil, problem, root cause & repair time (1, 2, ...)</p>
+            <p class="text-[10px] text-slate-400">Rekap problem, PIC, foto, status & repair time</p>
           </div>
           <span class="text-xs text-slate-500 font-semibold">
             Total: <strong id="tableTotalRows" class="text-blue-600 font-bold">0</strong> baris
@@ -252,12 +268,14 @@
                 <th class="p-2">Problem & Analisis</th>
                 <th class="p-2 text-center">Downtime</th>
                 <th class="p-2">PIC</th>
+                <!-- KOLOM FOTO BERADA DI ANTARA PIC DAN STATUS -->
+                <th class="p-2 text-center">Foto</th>
                 <th class="p-2">Status</th>
                 <th class="p-2 text-center">Aksi</th>
               </tr>
             </thead>
             <tbody id="tableBody" class="divide-y divide-slate-100">
-              <tr><td colspan="9" class="p-6 text-center text-slate-400">Menghubungkan ke server cloud...</td></tr>
+              <tr><td colspan="10" class="p-6 text-center text-slate-400">Menghubungkan ke server cloud...</td></tr>
             </tbody>
           </table>
         </div>
@@ -267,8 +285,20 @@
 
   </main>
 
+  <!-- Modal Pratinjau Foto Penuh -->
+  <div id="imageModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeModal()">
+    <div class="max-w-xl w-full bg-white rounded-2xl overflow-hidden p-3 relative" onclick="event.stopPropagation()">
+      <div class="flex justify-between items-center pb-2 border-b">
+        <span class="font-bold text-xs text-slate-800">Lampiran Foto Kerusakan</span>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-700 text-lg font-bold">&times;</button>
+      </div>
+      <img id="modalFullImg" class="w-full h-auto max-h-[75vh] object-contain rounded-lg mt-2" />
+    </div>
+  </div>
+
   <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-YLC4zZHfLZwBgtSqc_NJcjg5GTgd-2eCVQ9o1liy541Azw9yBI9xeSOSZZObPcUo/exec";
+    // URL Web App Google Apps Script
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZhJr7yPMrxHsdmEVKNO454NoHNZCPvFMgL9cDQz97hX1DAFOetidBE76M-fijrdsC/exec";
 
     const masterHierarchy = {
       "TRIM 1": { lines: ["Trim 1"], stations: { "Trim 1": ["TL8", "TL10", "Loading"] }, machines: { "TL8": ["Conveyor Trim"], "TL10": ["Lifter Trim 1"], "Loading": ["Hopper"] } },
@@ -280,6 +310,7 @@
     };
 
     let dataset = [];
+    let currentPhotoBase64 = "";
 
     function setRealTimeClock() {
       const now = new Date();
@@ -292,8 +323,48 @@
     window.addEventListener('DOMContentLoaded', () => {
       setRealTimeClock();
       fetchCloudData();
-      setInterval(fetchCloudData, 30000);
+      setInterval(fetchCloudData, 30000); // Polling otomatis tiap 30 detik
     });
+
+    // Kompresi foto otomatis di browser
+    function previewSelectedPhoto(input) {
+      const file = input.files[0];
+      if (!file) {
+        currentPhotoBase64 = "";
+        document.getElementById('photoPreviewBox').classList.add('hidden');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 900;
+          const scaleSize = MAX_WIDTH / img.width;
+          canvas.width = (img.width > MAX_WIDTH) ? MAX_WIDTH : img.width;
+          canvas.height = (img.width > MAX_WIDTH) ? (img.height * scaleSize) : img.height;
+
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          currentPhotoBase64 = canvas.toDataURL('image/jpeg', 0.7);
+          document.getElementById('photoPreviewImg').src = currentPhotoBase64;
+          document.getElementById('photoPreviewBox').classList.remove('hidden');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function openModal(imgUrl) {
+      document.getElementById('modalFullImg').src = imgUrl;
+      document.getElementById('imageModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('imageModal').classList.add('hidden');
+    }
 
     function onAreaChange() {
       const a = document.getElementById('formArea').value;
@@ -352,6 +423,7 @@
       return total;
     }
 
+    // Ambil data terbaru dari cloud
     function fetchCloudData() {
       const badge = document.getElementById('cloud-badge');
       const syncIcon = document.getElementById('sync-icon');
@@ -389,11 +461,12 @@
       document.body.appendChild(script);
     }
 
+    // Mengirim data baru
     async function submitForm(e) {
       e.preventDefault();
       const btn = document.getElementById('btnSubmit');
       btn.disabled = true;
-      btn.innerHTML = `<i class="ph ph-spinner animate-spin text-base"></i> Menyimpan ke Cloud...`;
+      btn.innerHTML = `<i class="ph ph-spinner animate-spin text-base"></i> Menyimpan...`;
 
       const payload = {
         action: "create",
@@ -415,12 +488,13 @@
         total: calcTotal(),
         picLocal: document.getElementById('picLocal').value.trim(),
         picVmt: document.getElementById('picVmt').value.trim() || "-",
+        photoBase64: currentPhotoBase64,
         status: document.getElementById('statusRepair').value,
         netHours: 7
       };
 
       let localData = JSON.parse(localStorage.getItem('ga_maintenance_logs')) || [];
-      localData.push({ ...payload, sheetRowIndex: Date.now() });
+      localData.push({ ...payload, photoUrl: currentPhotoBase64, sheetRowIndex: Date.now() });
       localStorage.setItem('ga_maintenance_logs', JSON.stringify(localData));
 
       try {
@@ -431,16 +505,20 @@
           body: JSON.stringify(payload)
         });
 
-        alert("Data berhasil tersimpan ke Google Sheets!");
+        alert("Data berhasil tersimpan!");
         setTimeout(fetchCloudData, 1500);
       } catch (err) {
-        alert("Gagal terhubung ke cloud, data tersimpan di perangkat lokal.");
+        alert("Gagal terhubung ke cloud, data tersimpan di cache lokal.");
         fetchCloudData();
       }
 
+      // Reset form
       document.getElementById('formProblem').value = "";
       document.getElementById('formRoot').value = "";
       document.getElementById('formCounter').value = "";
+      document.getElementById('formPhoto').value = "";
+      document.getElementById('photoPreviewBox').classList.add('hidden');
+      currentPhotoBase64 = "";
       document.getElementById('timeExec').value = "2";
       document.getElementById('timePart').value = "0";
       document.getElementById('timeTool').value = "0";
@@ -452,9 +530,20 @@
       btn.innerHTML = `<i class="ph ph-floppy-disk text-base"></i> Simpan Data Log Perbaikan`;
     }
 
+    // Menghapus data logbook secara bersih
     async function deleteRecord(sheetRowIndex) {
+      if (!sheetRowIndex) {
+        alert("Data ini belum terindeks di server cloud. Silakan refresh halaman terlebih dahulu.");
+        return;
+      }
+
       if (!confirm("Hapus baris catatan ini secara permanen dari database Google Sheets?")) return;
 
+      const badge = document.getElementById('cloud-badge');
+      badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-400 animate-ping"></span><span>Menghapus...</span>`;
+      badge.className = "px-2.5 py-1 text-[10px] rounded font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center gap-1";
+
+      // Hapus dari state lokal
       dataset = dataset.filter(r => r.sheetRowIndex !== sheetRowIndex);
       renderUI();
 
@@ -465,13 +554,15 @@
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({ action: "delete", rowIndex: sheetRowIndex })
         });
-        setTimeout(fetchCloudData, 1500);
+
+        setTimeout(fetchCloudData, 1200);
       } catch (err) {
         alert("Gagal menghapus di cloud.");
         fetchCloudData();
       }
     }
 
+    // Render antarmuka & perhitungan KPI
     function renderUI() {
       const count = dataset.length;
       const totalDown = dataset.reduce((s, d) => s + (Number(d.total) || 0), 0);
@@ -488,13 +579,12 @@
 
       const tbody = document.getElementById('tableBody');
       if (dataset.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-slate-400">Belum ada data rekaman di database cloud.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" class="p-6 text-center text-slate-400">Belum ada data rekaman di database cloud.</td></tr>';
         return;
       }
 
       tbody.innerHTML = dataset.map((d, idx) => `
         <tr class="hover:bg-slate-50 transition border-b align-top">
-          <!-- Nomor berurutan dari 1, 2, 3 ke bawah -->
           <td class="p-2 text-slate-500 font-bold font-mono">${idx + 1}</td>
           <td class="p-2">
             <div class="font-bold text-blue-700 flex items-center gap-1">
@@ -517,6 +607,14 @@
             <div>${d.picLocal}</div>
             <div class="text-[10px] text-slate-400">VMT: ${d.picVmt}</div>
           </td>
+          <!-- KOLOM FOTO DI ANTARA PIC DAN STATUS -->
+          <td class="p-2 text-center">
+            ${d.photoUrl ? `
+              <button onclick="openModal('${d.photoUrl}')" class="inline-block p-1 bg-slate-100 hover:bg-blue-100 rounded border transition" title="Lihat Foto">
+                <img src="${d.photoUrl}" class="w-8 h-8 object-cover rounded shadow-sm" onerror="this.src='https://placehold.co/32x32?text=IMG'" />
+              </button>
+            ` : `<span class="text-[10px] text-slate-300">-</span>`}
+          </td>
           <td class="p-2">
             <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${d.status === 'OK' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
               ${d.status}
@@ -531,6 +629,7 @@
       `).join('');
     }
 
+    // Ekspor data ke file Excel (.xlsx)
     function exportDataToExcel() {
       if (!dataset || dataset.length === 0) {
         alert("Belum ada data untuk diekspor!");
@@ -557,6 +656,7 @@
         "REPAIR TIME TOTAL (menit)": item.total || 0,
         "PIC LOCAL": item.picLocal || "-",
         "PIC VMT": item.picVmt || "-",
+        "PHOTO URL": item.photoUrl || "-",
         "Status": item.status || "OK",
         "Total Net Working Hour": item.netHours || 7
       }));
