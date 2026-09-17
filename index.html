@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>E-Logbook Maintenance GA (Multi-Device)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-12">
+
+  <!-- Header -->
+  <header class="bg-slate-900 text-white px-4 md:px-6 py-3.5 shadow sticky top-0 z-50 flex justify-between items-center">
+    <div class="flex items-center gap-2.5">
+      <div class="p-1.5 bg-blue-600 rounded-lg">
+        <i class="ph ph-wrench text-xl"></i>
+      </div>
+      <div>
+        <h1 class="text-sm md:text-base font-bold">Maintenance GA Cloud Logbook</h1>
+        <p class="text-[10px] text-slate-400">Multi-Device Centralized System</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="fetchCloudData()" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition">
+        <i id="sync-icon" class="ph ph-arrows-clockwise text-sm"></i>
+        <span class="hidden sm:inline">Refresh Data</span>
+      </button>
+      <span id="cloud-badge" class="px-2 py-0.5 text-[10px] rounded font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+        Menghubungkan...
+      </span>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto p-3 md:p-6 space-y-4">
+
+    <!-- KPI Ringkas -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 md:gap-4">
+      <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
+        <span class="text-[10px] font-bold text-slate-400 uppercase">Total Breakdown</span>
+        <div id="stat-count" class="text-xl md:text-2xl font-black text-slate-800 mt-1">0</div>
+        <p class="text-[10px] text-slate-400">Kejadian kerusakan</p>
+      </div>
+      <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
+        <span class="text-[10px] font-bold text-slate-400 uppercase">Total Downtime</span>
+        <div class="text-xl md:text-2xl font-black text-rose-600 mt-1"><span id="stat-downtime">0</span> <span class="text-xs text-slate-500 font-normal">Mnt</span></div>
+        <p class="text-[10px] text-slate-400">Akumulasi perbaikan</p>
+      </div>
+      <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
+        <span class="text-[10px] font-bold text-slate-400 uppercase">MTTR Aktual</span>
+        <div class="text-xl md:text-2xl font-black text-blue-600 mt-1"><span id="stat-mttr">0.0</span> <span class="text-xs text-slate-500 font-normal">Mnt</span></div>
+        <p class="text-[10px] text-slate-400">Rata-rata waktu repair</p>
+      </div>
+      <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
+        <span class="text-[10px] font-bold text-slate-400 uppercase">Availability</span>
+        <div id="stat-avail" class="text-xl md:text-2xl font-black text-emerald-600 mt-1">100%</div>
+        <p class="text-[10px] text-slate-400">Tingkat kesiapan lini</p>
+      </div>
+    </div>
+
+    <!-- Konten Utama: Form & Logbook -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+      <!-- Form Input -->
+      <div class="lg:col-span-5 bg-white p-4 md:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center justify-between border-b pb-2.5">
+          <h2 class="text-xs md:text-sm font-bold text-slate-800 flex items-center gap-1.5">
+            <i class="ph ph-note-pencil text-blue-600 text-base"></i> Input Log Kerusakan Mesin
+          </h2>
+          <span class="text-[10px] px-2 py-0.5 bg-blue-50 text-blue-700 font-semibold rounded">Form Teknisi</span>
+        </div>
+
+        <form id="repairForm" onsubmit="submitForm(event)" class="space-y-3">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Tanggal</label>
+              <input type="date" id="formDate" required class="w-full text-xs px-2.5 py-2 border rounded-lg bg-slate-50" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Shift</label>
+              <select id="formShift" class="w-full text-xs px-2.5 py-2 border rounded-lg bg-slate-50">
+                <option value="S1">S1 (Shift 1)</option>
+                <option value="S2">S2 (Shift 2)</option>
+                <option value="S3">S3 (Shift 3)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Hierarki Mesin Bertingkat -->
+          <div class="space-y-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-600 uppercase">Area</label>
+                <select id="formArea" onchange="onAreaChange()" required class="w-full text-xs p-1.5 border rounded bg-white">
+                  <option value="">-- Area --</option>
+                  <option value="TRIM 1">TRIM 1</option>
+                  <option value="TRIM 2">TRIM 2</option>
+                  <option value="DOOR LINE">DOOR LINE</option>
+                  <option value="CHASSIS">CHASSIS</option>
+                  <option value="PRE MARRIAGE">PRE MARRIAGE</option>
+                  <option value="FINAL">FINAL</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-600 uppercase">Line</label>
+                <select id="formLine" onchange="onLineChange()" required class="w-full text-xs p-1.5 border rounded bg-white">
+                  <option value="">-- Line --</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-600 uppercase">Station</label>
+                <select id="formStation" onchange="onStationChange()" required class="w-full text-xs p-1.5 border rounded bg-white">
+                  <option value="">-- Station --</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-600 uppercase">Machine</label>
+                <select id="formMachine" required class="w-full text-xs p-1.5 border rounded bg-white">
+                  <option value="">-- Machine --</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input Durasi (Menit) -->
+          <div class="border border-slate-200 rounded-xl p-2.5 bg-blue-50/20 space-y-1.5">
+            <div class="flex justify-between items-center text-xs font-bold text-slate-700">
+              <span>Waktu Perbaikan (Menit)</span>
+              <span class="text-amber-800 bg-amber-100 px-2 py-0.5 rounded text-[11px]">
+                Total: <strong id="sumTotalRepair">3</strong> mnt
+              </span>
+            </div>
+            <div class="grid grid-cols-3 gap-1.5 text-center">
+              <div>
+                <label class="block text-[9px] text-slate-500 font-semibold">Analysis</label>
+                <input type="number" id="timeAnalysis" min="0" value="1" oninput="calcTotal()" class="w-full text-xs p-1.5 border rounded text-center" />
+              </div>
+              <div>
+                <label class="block text-[9px] text-slate-500 font-semibold">Part Prep</label>
+                <input type="number" id="timePart" min="0" value="0" oninput="calcTotal()" class="w-full text-xs p-1.5 border rounded text-center" />
+              </div>
+              <div>
+                <label class="block text-[9px] text-slate-500 font-semibold">Tool Prep</label>
+                <input type="number" id="timeTool" min="0" value="0" oninput="calcTotal()" class="w-full text-xs p-1.5 border rounded text-center" />
+              </div>
+              <div>
+                <label class="block text-[9px] text-slate-500 font-semibold">Execution</label>
+                <input type="number" id="timeExec" min="0" value="2" oninput="calcTotal()" class="w-full text-xs p-1.5 border rounded text-center" required />
+              </div>
+              <div>
+                <label class="block text-[9px] text-slate-500 font-semibold">Trial</label>
+                <input type="number" id="timeTrial" min="0" value="0" oninput="calcTotal()" class="w-full text-xs p-1.5 border rounded text-center" />
+              </div>
+            </div>
+          </div>
+
+          <!-- PIC & Status -->
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">PIC Local</label>
+              <input type="text" id="picLocal" placeholder="Teknisi" required class="w-full text-xs p-1.5 border rounded" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">PIC VMT</label>
+              <input type="text" id="picVmt" placeholder="VMT" class="w-full text-xs p-1.5 border rounded" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Status</label>
+              <select id="statusRepair" class="w-full text-xs p-1.5 border rounded bg-white">
+                <option value="OK">OK</option>
+                <option value="MONITORING">MONITORING</option>
+                <option value="NG">NG</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" id="btnSubmit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5">
+            <i class="ph ph-cloud-arrow-up text-base"></i> Simpan ke Server Pusat
+          </button>
+        </form>
+      </div>
+
+      <!-- Live Log Table -->
+      <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+        <div class="p-3.5 border-b bg-slate-50 flex justify-between items-center">
+          <h3 class="font-bold text-xs uppercase tracking-wider text-slate-700">Database Log Masuk</h3>
+          <span class="text-[11px] text-slate-500">Auto-update setiap 30 detik</span>
+        </div>
+
+        <div class="overflow-x-auto flex-1 max-h-[500px]">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-100 text-slate-600 sticky top-0 border-b">
+              <tr>
+                <th class="p-2">Shift</th>
+                <th class="p-2">Area / Line</th>
+                <th class="p-2">Machine</th>
+                <th class="p-2 text-center">Downtime</th>
+                <th class="p-2">PIC</th>
+                <th class="p-2">Status</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody" class="divide-y divide-slate-100">
+              <tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat data dari server...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // MASUKKAN URL HASIL DEPLOY GOOGLE APPS SCRIPT ANDA DI SINI:
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLui_hrn5mz5wS0wuvQZo_Vr5YFMfd3xOi4XSRvTPVEBDlE2TSDnu5KM1RTB5b209Q/exec";
+
+    const masterHierarchy = {
+      "TRIM 1": { lines: ["Trim 1"], stations: { "Trim 1": ["TL8", "TL10", "Loading"] }, machines: { "TL8": ["Conveyor Trim"], "TL10": ["Lifter Trim 1"], "Loading": ["Hopper"] } },
+      "TRIM 2": { lines: ["Trim 2"], stations: { "Trim 2": ["Loading", "TL16", "Unloading"] }, machines: { "Loading": ["Load Lift"], "TL16": ["Lifter Door 6"], "Unloading": ["Transfer Roller"] } },
+      "DOOR LINE": { lines: ["Doorline"], stations: { "Doorline": ["Loading", "Doorline"] }, machines: { "Loading": ["Lifter Door 4"], "Doorline": ["Hanger Door 28"] } },
+      "CHASSIS": { lines: ["Chassis 1", "Chassis 2"], stations: { "Chassis 1": ["CH8", "CH9"], "Chassis 2": ["CH9", "CH10"] }, machines: { "CH8": ["Hanger No 6"], "CH9": ["Hanger No 17", "Hanger No 3", "Hanger No 2"], "CH10": ["Drop Lifter"] } },
+      "PRE MARRIAGE": { lines: ["PM"], stations: { "PM": ["PM1", "PM3", "PM5", "PM6"] }, machines: { "PM1": ["AGV No 3"], "PM3": ["AGV No 5", "AGV No 7"], "PM5": ["AGV No 5"], "PM6": ["AGV No 4"] } },
+      "FINAL": { lines: ["Final"], stations: { "Final": ["Loading", "Unloading", "Tester"] }, machines: { "Unloading": ["Travers Motor"], "Loading": ["Shuttle Car"], "Tester": ["Brake Tester"] } }
+    };
+
+    let dataset = [];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('formDate').valueAsDate = new Date();
+      fetchCloudData();
+      setInterval(fetchCloudData, 30000); // Polling otomatis setiap 30 detik
+    });
+
+    function onAreaChange() {
+      const a = document.getElementById('formArea').value;
+      const l = document.getElementById('formLine');
+      l.innerHTML = '<option value="">-- Line --</option>';
+      document.getElementById('formStation').innerHTML = '<option value="">-- Station --</option>';
+      document.getElementById('formMachine').innerHTML = '<option value="">-- Machine --</option>';
+
+      if (a && masterHierarchy[a]) {
+        masterHierarchy[a].lines.forEach(line => l.innerHTML += `<option value="${line}">${line}</option>`);
+        if (masterHierarchy[a].lines.length === 1) {
+          l.value = masterHierarchy[a].lines[0];
+          onLineChange();
+        }
+      }
+    }
+
+    function onLineChange() {
+      const a = document.getElementById('formArea').value;
+      const l = document.getElementById('formLine').value;
+      const s = document.getElementById('formStation');
+      s.innerHTML = '<option value="">-- Station --</option>';
+      document.getElementById('formMachine').innerHTML = '<option value="">-- Machine --</option>';
+
+      if (l && masterHierarchy[a]?.stations[l]) {
+        masterHierarchy[a].stations[l].forEach(st => s.innerHTML += `<option value="${st}">${st}</option>`);
+        if (masterHierarchy[a].stations[l].length === 1) {
+          s.value = masterHierarchy[a].stations[l][0];
+          onStationChange();
+        }
+      }
+    }
+
+    function onStationChange() {
+      const a = document.getElementById('formArea').value;
+      const s = document.getElementById('formStation').value;
+      const m = document.getElementById('formMachine');
+      m.innerHTML = '<option value="">-- Machine --</option>';
+
+      if (s && masterHierarchy[a]?.machines[s]) {
+        masterHierarchy[a].machines[s].forEach(mac => m.innerHTML += `<option value="${mac}">${mac}</option>`);
+        if (masterHierarchy[a].machines[s].length === 1) {
+          m.value = masterHierarchy[a].machines[s][0];
+        }
+      }
+    }
+
+    function calcTotal() {
+      const sum = (parseFloat(document.getElementById('timeAnalysis').value) || 0) +
+                  (parseFloat(document.getElementById('timePart').value) || 0) +
+                  (parseFloat(document.getElementById('timeTool').value) || 0) +
+                  (parseFloat(document.getElementById('timeExec').value) || 0) +
+                  (parseFloat(document.getElementById('timeTrial').value) || 0);
+      document.getElementById('sumTotalRepair').textContent = sum;
+      return sum;
+    }
+
+    // Mengambil data dari cloud
+    async function fetchCloudData() {
+      const badge = document.getElementById('cloud-badge');
+      const syncIcon = document.getElementById('sync-icon');
+      syncIcon.classList.add('animate-spin');
+
+      if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("ISI_DENGAN_URL")) {
+        badge.textContent = "Mode Offline (URL Belum Diset)";
+        badge.className = "px-2 py-0.5 text-[10px] rounded font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30";
+        syncIcon.classList.remove('animate-spin');
+        return;
+      }
+
+      try {
+        const res = await fetch(GOOGLE_SCRIPT_URL);
+        const data = await res.json();
+        dataset = data.reverse(); // data terbaru di atas
+        badge.textContent = "Online Cloud Connected";
+        badge.className = "px-2 py-0.5 text-[10px] rounded font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+        renderUI();
+      } catch (err) {
+        badge.textContent = "Gagal Sinkronisasi";
+        badge.className = "px-2 py-0.5 text-[10px] rounded font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30";
+      } finally {
+        syncIcon.classList.remove('animate-spin');
+      }
+    }
+
+    // Mengirim data baru dari perangkat mana saja ke server cloud
+    async function submitForm(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmit');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="ph ph-spinner animate-spin text-base"></i> Mengirim ke Cloud...`;
+
+      const payload = {
+        date: document.getElementById('formDate').value,
+        shift: document.getElementById('formShift').value,
+        area: document.getElementById('formArea').value,
+        line: document.getElementById('formLine').value,
+        station: document.getElementById('formStation').value,
+        machine: document.getElementById('formMachine').value,
+        analysis: parseFloat(document.getElementById('timeAnalysis').value) || 0,
+        partPrep: parseFloat(document.getElementById('timePart').value) || 0,
+        toolPrep: parseFloat(document.getElementById('timeTool').value) || 0,
+        execution: parseFloat(document.getElementById('timeExec').value) || 0,
+        trial: parseFloat(document.getElementById('timeTrial').value) || 0,
+        total: calcTotal(),
+        picLocal: document.getElementById('picLocal').value.trim(),
+        picVmt: document.getElementById('picVmt').value.trim() || "-",
+        status: document.getElementById('statusRepair').value,
+        netHours: 7
+      };
+
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors', // Penting untuk bypass CORS Google Apps Script
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        alert("Data berhasil tersimpan di server pusat!");
+        // Refresh tabel
+        setTimeout(fetchCloudData, 1000);
+      } catch (err) {
+        alert("Gagal mengirim data. Periksa koneksi internet.");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="ph ph-cloud-arrow-up text-base"></i> Simpan ke Server Pusat`;
+      }
+    }
+
+    function renderUI() {
+      // 1. Update KPI
+      const count = dataset.length;
+      const totalDown = dataset.reduce((s, d) => s + (d.total || 0), 0);
+      document.getElementById('stat-count').textContent = count;
+      document.getElementById('stat-downtime').textContent = totalDown;
+      document.getElementById('stat-mttr').textContent = count > 0 ? (totalDown / count).toFixed(1) : 0;
+
+      const uniqueShifts = new Set(dataset.map(d => `${d.date}_${d.shift}`)).size || 1;
+      const plannedHours = uniqueShifts * 7;
+      const avail = plannedHours > 0 ? (100 - ((totalDown / 60) / plannedHours * 100)).toFixed(1) : 100;
+      document.getElementById('stat-avail').textContent = `${avail}%`;
+
+      // 2. Render Tabel
+      const tbody = document.getElementById('tableBody');
+      if (dataset.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada catatan di database pusat.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = dataset.map(d => `
+        <tr class="hover:bg-slate-50 transition border-b">
+          <td class="p-2 font-semibold text-slate-700">${d.shift}</td>
+          <td class="p-2"><span class="font-bold text-slate-800">${d.area}</span> <span class="text-[10px] text-slate-400">(${d.line})</span></td>
+          <td class="p-2 font-medium text-slate-800">${d.machine}</td>
+          <td class="p-2 text-center font-bold text-rose-600">${d.total} mnt</td>
+          <td class="p-2 text-slate-600">${d.picLocal}</td>
+          <td class="p-2"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${d.status === 'OK' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${d.status}</span></td>
+        </tr>
+      `).join('');
+    }
+  </script>
+</body>
+</html>
