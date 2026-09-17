@@ -30,7 +30,7 @@
       <!-- Status Cloud Badge -->
       <span id="cloud-badge" class="px-2.5 py-1 text-[10px] rounded font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1">
         <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-        <span>Menghubungkan...</span>
+        <span>Menghubungkan ke Cloud...</span>
       </span>
 
       <!-- Tombol Refresh -->
@@ -251,7 +251,7 @@
               </tr>
             </thead>
             <tbody id="tableBody" class="divide-y divide-slate-100">
-              <tr><td colspan="9" class="p-6 text-center text-slate-400">Menghubungkan ke server...</td></tr>
+              <tr><td colspan="9" class="p-6 text-center text-slate-400">Menghubungkan ke server cloud...</td></tr>
             </tbody>
           </table>
         </div>
@@ -262,10 +262,8 @@
   </main>
 
   <script>
-    // URL Google Apps Script Anda yang aktif
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzv_OHYhYRpi1_C1z4xsRet0_Ynoxpz97W0QzhM8G1Cjry2VFX0NF5uRXWvzh8H2mKV/exec";
 
-    // Master Data Hierarki GA Sesuai Excel
     const masterHierarchy = {
       "TRIM 1": { lines: ["Trim 1"], stations: { "Trim 1": ["TL8", "TL10", "Loading"] }, machines: { "TL8": ["Conveyor Trim"], "TL10": ["Lifter Trim 1"], "Loading": ["Hopper"] } },
       "TRIM 2": { lines: ["Trim 2"], stations: { "Trim 2": ["Loading", "TL16", "Unloading"] }, machines: { "Loading": ["Load Lift"], "TL16": ["Lifter Door 6"], "Unloading": ["Transfer Roller"] } },
@@ -280,10 +278,10 @@
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('formDate').valueAsDate = new Date();
       fetchCloudData();
-      setInterval(fetchCloudData, 30000); // Polling otomatis setiap 30 detik
+      setInterval(fetchCloudData, 30000);
     });
 
-    // Cascading Dropdown
+    // Cascading Dropdowns
     function onAreaChange() {
       const a = document.getElementById('formArea').value;
       const l = document.getElementById('formLine');
@@ -330,7 +328,6 @@
       }
     }
 
-    // Auto-sum repair time
     function calcTotal() {
       const a = parseFloat(document.getElementById('timeAnalysis').value) || 0;
       const p = parseFloat(document.getElementById('timePart').value) || 0;
@@ -342,37 +339,50 @@
       return total;
     }
 
-    // Mengambil data dari Google Sheets dengan redirect follow & fallback
-    async function fetchCloudData() {
+    // PENGAMBILAN DATA DENGAN JSONP (KEBAL CORS DAN REDIRECT)
+    function fetchCloudData() {
       const badge = document.getElementById('cloud-badge');
       const syncIcon = document.getElementById('sync-icon');
       syncIcon.classList.add('animate-spin');
 
-      try {
-        const res = await fetch(GOOGLE_SCRIPT_URL, {
-          method: 'GET',
-          redirect: 'follow'
-        });
+      // Nama fungsi callback unik
+      const callbackName = 'googleAppsScriptCallback_' + Math.round(100000 * Math.random());
+      
+      // Definisikan handler callback global
+      window[callbackName] = function(data) {
+        delete window[callbackName];
+        const oldScript = document.getElementById(callbackName);
+        if (oldScript) oldScript.remove();
 
-        if (!res.ok) throw new Error("HTTP error " + res.status);
-        const data = await res.json();
         dataset = Array.isArray(data) ? data.reverse() : [];
-        
         badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>Cloud Connected</span>`;
         badge.className = "px-2.5 py-1 text-[10px] rounded font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1";
+        syncIcon.classList.remove('animate-spin');
         renderUI();
-      } catch (err) {
-        console.warn("Fetch cloud gagal, membaca cache lokal:", err);
+      };
+
+      // Buat tag script dinamis
+      const script = document.createElement('script');
+      script.id = callbackName;
+      script.src = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'callback=' + callbackName;
+      
+      // Fallback jika ada kegagalan jaringan
+      script.onerror = function() {
+        delete window[callbackName];
+        script.remove();
+        syncIcon.classList.remove('animate-spin');
+        
+        console.warn("Koneksi cloud timeout, memakai cache lokal.");
         dataset = JSON.parse(localStorage.getItem('ga_maintenance_logs')) || [];
         badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span><span>Mode Cache Lokal</span>`;
         badge.className = "px-2.5 py-1 text-[10px] rounded font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1";
         renderUI();
-      } finally {
-        syncIcon.classList.remove('animate-spin');
-      }
+      };
+
+      document.body.appendChild(script);
     }
 
-    // Simpan Data Baru ke Google Sheets
+    // SUBMIT FORM KE GOOGLE SHEETS
     async function submitForm(e) {
       e.preventDefault();
       const btn = document.getElementById('btnSubmit');
@@ -402,7 +412,7 @@
         netHours: 7
       };
 
-      // Backup lokal
+      // Simpan backup ke LocalStorage
       let localData = JSON.parse(localStorage.getItem('ga_maintenance_logs')) || [];
       localData.unshift({ ...payload, sheetRowIndex: Date.now() });
       localStorage.setItem('ga_maintenance_logs', JSON.stringify(localData));
@@ -411,7 +421,6 @@
         await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
           mode: 'no-cors',
-          redirect: 'follow',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload)
         });
@@ -419,11 +428,11 @@
         alert("Data berhasil tersimpan ke Google Sheets!");
         setTimeout(fetchCloudData, 1500);
       } catch (err) {
-        alert("Gagal terhubung, data tetap tersimpan di memori perangkat ini.");
+        alert("Gagal terhubung langsung, data tetap aman di perangkat lokal.");
         fetchCloudData();
       }
 
-      // Reset form input
+      // Reset form
       document.getElementById('formProblem').value = "";
       document.getElementById('formRoot').value = "";
       document.getElementById('formCounter').value = "";
@@ -437,7 +446,7 @@
       btn.innerHTML = `<i class="ph ph-floppy-disk text-base"></i> Simpan Data Log Perbaikan`;
     }
 
-    // Hapus Baris Permanen di Google Sheets
+    // HAPUS DATA PERMANEN
     async function deleteRecord(sheetRowIndex) {
       if (!confirm("Hapus baris catatan ini secara permanen dari database Google Sheets?")) return;
 
@@ -448,18 +457,16 @@
         await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
           mode: 'no-cors',
-          redirect: 'follow',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({ action: "delete", rowIndex: sheetRowIndex })
         });
         setTimeout(fetchCloudData, 1500);
       } catch (err) {
-        alert("Gagal menghapus dari Google Sheets.");
+        alert("Gagal mengirim perintah hapus.");
         fetchCloudData();
       }
     }
 
-    // Render Tampilan UI & Kalkulasi KPI
     function renderUI() {
       const count = dataset.length;
       const totalDown = dataset.reduce((s, d) => s + (Number(d.total) || 0), 0);
@@ -513,7 +520,6 @@
       `).join('');
     }
 
-    // Export Data ke Excel (.xlsx) Sesuai Urutan Kolom Gambar
     function exportDataToExcel() {
       if (!dataset || dataset.length === 0) {
         alert("Belum ada data untuk diekspor!");
