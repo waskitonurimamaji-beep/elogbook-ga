@@ -33,7 +33,7 @@
         <span>Menghubungkan ke Cloud...</span>
       </span>
 
-      <!-- Tombol Refresh / Sinkronisasi -->
+      <!-- Tombol Refresh -->
       <button onclick="fetchCloudData()" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition" title="Refresh data dari Google Sheets">
         <i id="sync-icon" class="ph ph-arrows-clockwise text-sm"></i>
         <span class="hidden sm:inline">Refresh</span>
@@ -49,7 +49,7 @@
 
   <main class="max-w-7xl mx-auto p-3 md:p-6 space-y-4">
 
-    <!-- KPI Ringkas (MTTR, MTBF, Availability, Total Downtime) -->
+    <!-- KPI Ringkas -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
       <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Breakdown</span>
@@ -146,7 +146,7 @@
             </div>
           </div>
 
-          <!-- Problem, Root Analysis, Countermeasure -->
+          <!-- Problem, Root, Countermeasure -->
           <div class="space-y-2 bg-amber-50/50 p-2.5 rounded-xl border border-amber-200">
             <div>
               <label class="block text-[10px] font-bold text-amber-900 uppercase">PROBLEM (Masalah / Gejala)</label>
@@ -155,12 +155,12 @@
             </div>
             <div>
               <label class="block text-[10px] font-bold text-amber-900 uppercase">ROOT ANALISYS (Akar Penyebab)</label>
-              <textarea id="formRoot" rows="2" placeholder="Contoh: Kabel sensor terjepit / kotoran debu baut"
+              <textarea id="formRoot" rows="2" placeholder="Contoh: Kabel sensor terjepit kotoran"
                         class="w-full text-xs p-2 border rounded-lg bg-white outline-none focus:ring-1 focus:ring-amber-500"></textarea>
             </div>
             <div>
               <label class="block text-[10px] font-bold text-amber-900 uppercase">COUNTERMEASURE (Tindakan Penanggulangan)</label>
-              <textarea id="formCounter" rows="2" placeholder="Contoh: Ganti kabel sensor & pasang pelindung kabel"
+              <textarea id="formCounter" rows="2" placeholder="Contoh: Ganti kabel sensor & pasang pelindung"
                         class="w-full text-xs p-2 border rounded-lg bg-white outline-none focus:ring-1 focus:ring-amber-500"></textarea>
             </div>
           </div>
@@ -241,7 +241,8 @@
               <tr>
                 <th class="p-2">No</th>
                 <th class="p-2">Shift</th>
-                <th class="p-2">Area / Machine</th>
+                <th class="p-2">Area / Line</th>
+                <th class="p-2">Machine</th>
                 <th class="p-2">Problem & Analisis</th>
                 <th class="p-2 text-center">Downtime</th>
                 <th class="p-2">PIC</th>
@@ -250,7 +251,7 @@
               </tr>
             </thead>
             <tbody id="tableBody" class="divide-y divide-slate-100">
-              <tr><td colspan="8" class="p-6 text-center text-slate-400">Memuat data dari Google Sheets...</td></tr>
+              <tr><td colspan="9" class="p-6 text-center text-slate-400">Memuat data dari Google Sheets...</td></tr>
             </tbody>
           </table>
         </div>
@@ -261,54 +262,28 @@
   </main>
 
   <script>
-    // URL GOOGLE APPS SCRIPT ANDA (SUDAH TERPASANG)
+    // URL Google Apps Script Anda
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzv_OHYhYRpi1_C1z4xsRet0_Ynoxpz97W0QzhM8G1Cjry2VFX0NF5uRXWvzh8H2mKV/exec";
 
     // Master Data Hierarki GA Sesuai Excel
     const masterHierarchy = {
-      "TRIM 1": { 
-        lines: ["Trim 1"], 
-        stations: { "Trim 1": ["TL8", "TL10", "Loading"] }, 
-        machines: { "TL8": ["Conveyor Trim"], "TL10": ["Lifter Trim 1"], "Loading": ["Hopper"] } 
-      },
-      "TRIM 2": { 
-        lines: ["Trim 2"], 
-        stations: { "Trim 2": ["Loading", "TL16", "Unloading"] }, 
-        machines: { "Loading": ["Load Lift"], "TL16": ["Lifter Door 6"], "Unloading": ["Transfer Roller"] } 
-      },
-      "DOOR LINE": { 
-        lines: ["Doorline"], 
-        stations: { "Doorline": ["Loading", "Doorline"] }, 
-        machines: { "Loading": ["Lifter Door 4"], "Doorline": ["Hanger Door 28"] } 
-      },
-      "CHASSIS": { 
-        lines: ["Chassis 1", "Chassis 2"], 
-        stations: { "Chassis 1": ["CH8", "CH9"], "Chassis 2": ["CH9", "CH10"] }, 
-        machines: { "CH8": ["Hanger No 6"], "CH9": ["Hanger No 17", "Hanger No 3", "Hanger No 2"], "CH10": ["Drop Lifter"] } 
-      },
-      "PRE MARRIAGE": { 
-        lines: ["PM"], 
-        stations: { "PM": ["PM1", "PM3", "PM5", "PM6"] }, 
-        machines: { "PM1": ["AGV No 3"], "PM3": ["AGV No 5", "AGV No 7"], "PM5": ["AGV No 5"], "PM6": ["AGV No 4"] } 
-      },
-      "FINAL": { 
-        lines: ["Final"], 
-        stations: { "Final": ["Loading", "Unloading", "Tester"] }, 
-        machines: { "Unloading": ["Travers Motor"], "Loading": ["Shuttle Car"], "Tester": ["Brake Tester"] } 
-      }
+      "TRIM 1": { lines: ["Trim 1"], stations: { "Trim 1": ["TL8", "TL10", "Loading"] }, machines: { "TL8": ["Conveyor Trim"], "TL10": ["Lifter Trim 1"], "Loading": ["Hopper"] } },
+      "TRIM 2": { lines: ["Trim 2"], stations: { "Trim 2": ["Loading", "TL16", "Unloading"] }, machines: { "Loading": ["Load Lift"], "TL16": ["Lifter Door 6"], "Unloading": ["Transfer Roller"] } },
+      "DOOR LINE": { lines: ["Doorline"], stations: { "Doorline": ["Loading", "Doorline"] }, machines: { "Loading": ["Lifter Door 4"], "Doorline": ["Hanger Door 28"] } },
+      "CHASSIS": { lines: ["Chassis 1", "Chassis 2"], stations: { "Chassis 1": ["CH8", "CH9"], "Chassis 2": ["CH9", "CH10"] }, machines: { "CH8": ["Hanger No 6"], "CH9": ["Hanger No 17", "Hanger No 3", "Hanger No 2"], "CH10": ["Drop Lifter"] } },
+      "PRE MARRIAGE": { lines: ["PM"], stations: { "PM": ["PM1", "PM3", "PM5", "PM6"] }, machines: { "PM1": ["AGV No 3"], "PM3": ["AGV No 5", "AGV No 7"], "PM5": ["AGV No 5"], "PM6": ["AGV No 4"] } },
+      "FINAL": { lines: ["Final"], stations: { "Final": ["Loading", "Unloading", "Tester"] }, machines: { "Unloading": ["Travers Motor"], "Loading": ["Shuttle Car"], "Tester": ["Brake Tester"] } }
     };
 
     let dataset = [];
 
-    // Inisialisasi saat web pertama kali dibuka
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('formDate').valueAsDate = new Date();
       fetchCloudData();
-      // Polling data otomatis setiap 30 detik agar data antar device selalu sinkron
-      setInterval(fetchCloudData, 30000);
+      setInterval(fetchCloudData, 30000); // Polling otomatis setiap 30 detik
     });
 
-    // Cascading Dropdown
+    // Cascading Dropdowns
     function onAreaChange() {
       const a = document.getElementById('formArea').value;
       const l = document.getElementById('formLine');
@@ -355,7 +330,7 @@
       }
     }
 
-    // Auto-sum repair time (menit)
+    // Auto-sum repair time
     function calcTotal() {
       const a = parseFloat(document.getElementById('timeAnalysis').value) || 0;
       const p = parseFloat(document.getElementById('timePart').value) || 0;
@@ -367,7 +342,7 @@
       return total;
     }
 
-    // Mengambil data dari Google Sheets
+    // Ambil Data dari Google Sheets
     async function fetchCloudData() {
       const badge = document.getElementById('cloud-badge');
       const syncIcon = document.getElementById('sync-icon');
@@ -381,25 +356,22 @@
         badge.className = "px-2.5 py-1 text-[10px] rounded font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1";
         renderUI();
       } catch (err) {
-        // Jika jaringan down, fallback ke local storage
-        dataset = JSON.parse(localStorage.getItem('ga_maintenance_logs')) || [];
-        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span><span>Offline (Memori Lokal)</span>`;
-        badge.className = "px-2.5 py-1 text-[10px] rounded font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1";
-        renderUI();
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-400"></span><span>Koneksi Terputus</span>`;
+        badge.className = "px-2.5 py-1 text-[10px] rounded font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center gap-1";
       } finally {
         syncIcon.classList.remove('animate-spin');
       }
     }
 
-    // Mengirim form ke Google Sheets
+    // Simpan Data Form ke Google Sheets
     async function submitForm(e) {
       e.preventDefault();
       const btn = document.getElementById('btnSubmit');
       btn.disabled = true;
       btn.innerHTML = `<i class="ph ph-spinner animate-spin text-base"></i> Menyimpan ke Cloud...`;
 
-      const newRecord = {
-        id: Date.now(),
+      const payload = {
+        action: "create",
         date: document.getElementById('formDate').value,
         shift: document.getElementById('formShift').value,
         area: document.getElementById('formArea').value,
@@ -421,28 +393,21 @@
         netHours: 7
       };
 
-      // Backup cadangan ke LocalStorage perangkat
-      let localData = JSON.parse(localStorage.getItem('ga_maintenance_logs')) || [];
-      localData.unshift(newRecord);
-      localStorage.setItem('ga_maintenance_logs', JSON.stringify(localData));
-
       try {
         await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
-          mode: 'no-cors', // Penting untuk bypass CORS Google Apps Script
+          mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newRecord)
+          body: JSON.stringify(payload)
         });
 
         alert("Data berhasil tersimpan ke Google Sheets!");
-        // Refresh tabel
         setTimeout(fetchCloudData, 1500);
       } catch (err) {
-        alert("Gagal terhubung ke Google Sheets, data tetap aman di perangkat lokal.");
-        fetchCloudData();
+        alert("Gagal mengirim data ke Google Sheets.");
       }
 
-      // Reset isian teks
+      // Reset form
       document.getElementById('formProblem').value = "";
       document.getElementById('formRoot').value = "";
       document.getElementById('formCounter').value = "";
@@ -456,13 +421,28 @@
       btn.innerHTML = `<i class="ph ph-floppy-disk text-base"></i> Simpan Data Log Perbaikan`;
     }
 
-    function deleteRecord(id) {
-      if (!confirm("Hapus baris catatan ini dari tampilan? (Catatan di Google Sheets tetap tersimpan sebagai arsip)")) return;
-      dataset = dataset.filter(r => r.id !== id);
+    // Hapus Baris Permanen di Google Sheets
+    async function deleteRecord(sheetRowIndex) {
+      if (!confirm("Hapus baris catatan ini secara permanen dari database Google Sheets?")) return;
+
+      dataset = dataset.filter(r => r.sheetRowIndex !== sheetRowIndex);
       renderUI();
+
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: "delete", rowIndex: sheetRowIndex })
+        });
+        setTimeout(fetchCloudData, 1500);
+      } catch (err) {
+        alert("Gagal menghapus dari server.");
+        fetchCloudData();
+      }
     }
 
-    // Render KPI & Tabel
+    // Render Tampilan UI & Kalkulasi KPI
     function renderUI() {
       const count = dataset.length;
       const totalDown = dataset.reduce((s, d) => s + (Number(d.total) || 0), 0);
@@ -472,7 +452,6 @@
       document.getElementById('stat-downtime').textContent = totalDown;
       document.getElementById('stat-mttr').textContent = count > 0 ? (totalDown / count).toFixed(1) : 0;
 
-      // Hitung Availability (asumsi 7 jam / shift unik)
       const uniqueShifts = new Set(dataset.map(d => `${d.date}_${d.shift}`)).size || 1;
       const plannedHours = uniqueShifts * 7;
       const avail = plannedHours > 0 ? (100 - ((totalDown / 60) / plannedHours * 100)).toFixed(1) : 100;
@@ -480,7 +459,7 @@
 
       const tbody = document.getElementById('tableBody');
       if (dataset.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-slate-400">Belum ada data rekaman di database cloud. Silakan submit data pertama.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-slate-400">Belum ada data rekaman di database cloud.</td></tr>';
         return;
       }
 
@@ -490,9 +469,9 @@
           <td class="p-2 font-semibold text-slate-700">${d.shift}</td>
           <td class="p-2">
             <span class="font-bold text-slate-800">${d.area}</span>
-            <div class="text-[10px] text-slate-500">${d.line} &bull; ${d.station}</div>
-            <div class="text-[11px] font-semibold text-blue-700 mt-0.5">${d.machine}</div>
+            <div class="text-[10px] text-slate-500">${d.line} &bull; St: ${d.station}</div>
           </td>
+          <td class="p-2 font-medium text-slate-900">${d.machine}</td>
           <td class="p-2 max-w-xs">
             <div class="font-medium text-slate-900 leading-snug">${d.problem || "-"}</div>
             ${d.rootAnalysis ? `<div class="text-[10px] text-amber-800 bg-amber-50 rounded px-1.5 py-0.5 mt-1"><strong>Root:</strong> ${d.rootAnalysis}</div>` : ''}
@@ -509,7 +488,7 @@
             </span>
           </td>
           <td class="p-2 text-center">
-            <button onclick="deleteRecord(${d.id})" class="text-slate-400 hover:text-rose-600 transition" title="Hapus dari tampilan">
+            <button onclick="deleteRecord(${d.sheetRowIndex})" class="text-slate-400 hover:text-rose-600 transition" title="Hapus Permanen dari Google Sheets">
               <i class="ph ph-trash text-base"></i>
             </button>
           </td>
@@ -517,7 +496,7 @@
       `).join('');
     }
 
-    // Export Excel sesuai format template
+    // Export Data ke Excel (.xlsx) Sesuai Urutan Kolom Asli
     function exportDataToExcel() {
       if (!dataset || dataset.length === 0) {
         alert("Belum ada data untuk diekspor!");
