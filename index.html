@@ -1,97 +1,119 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>E-Logbook Maintenance GA (Multi-Device)</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>E-Logbook Maintenance General Assembly</title>
+  
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Phosphor Icons -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- SheetJS untuk Export ke Excel (.xlsx) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-12">
 
-  <!-- Header -->
-  <header class="bg-slate-900 text-white px-4 md:px-6 py-3.5 shadow sticky top-0 z-50 flex justify-between items-center">
+  <!-- Header & Navigasi -->
+  <header class="bg-slate-900 text-white px-4 md:px-6 py-3.5 shadow sticky top-0 z-50 flex flex-wrap justify-between items-center gap-3">
     <div class="flex items-center gap-2.5">
       <div class="p-1.5 bg-blue-600 rounded-lg">
         <i class="ph ph-wrench text-xl"></i>
       </div>
       <div>
-        <h1 class="text-sm md:text-base font-bold">Maintenance GA Cloud Logbook</h1>
-        <p class="text-[10px] text-slate-400">Multi-Device Centralized System</p>
+        <h1 class="text-sm md:text-base font-bold leading-tight">E-Logbook Maintenance GA</h1>
+        <p class="text-[10px] text-slate-400">Digital Logbook & Live Downtime KPI</p>
       </div>
     </div>
-    <div class="flex items-center gap-2">
-      <button onclick="fetchCloudData()" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition">
-        <i id="sync-icon" class="ph ph-arrows-clockwise text-sm"></i>
-        <span class="hidden sm:inline">Refresh Data</span>
-      </button>
-      <span id="cloud-badge" class="px-2 py-0.5 text-[10px] rounded font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30">
-        Menghubungkan...
+    
+    <div class="flex items-center gap-2 flex-wrap">
+      <!-- Badge Status Koneksi -->
+      <span id="cloud-badge" class="px-2.5 py-1 text-[10px] rounded font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+        <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+        <span>Menghubungkan...</span>
       </span>
+
+      <!-- Tombol Sync -->
+      <button onclick="fetchCloudData()" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition" title="Sinkronkan data server">
+        <i id="sync-icon" class="ph ph-arrows-clockwise text-sm"></i>
+        <span class="hidden sm:inline">Refresh</span>
+      </button>
+
+      <!-- Tombol Export Excel -->
+      <button onclick="exportDataToExcel()" class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow transition">
+        <i class="ph ph-file-xls text-base"></i>
+        <span>Export Excel</span>
+      </button>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto p-3 md:p-6 space-y-4">
+  <main class="max-w-7xl mx-auto p-3 md:p-6 space-y-4">
 
     <!-- KPI Ringkas -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 md:gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
       <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
-        <span class="text-[10px] font-bold text-slate-400 uppercase">Total Breakdown</span>
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Breakdown</span>
         <div id="stat-count" class="text-xl md:text-2xl font-black text-slate-800 mt-1">0</div>
         <p class="text-[10px] text-slate-400">Kejadian kerusakan</p>
       </div>
       <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
-        <span class="text-[10px] font-bold text-slate-400 uppercase">Total Downtime</span>
-        <div class="text-xl md:text-2xl font-black text-rose-600 mt-1"><span id="stat-downtime">0</span> <span class="text-xs text-slate-500 font-normal">Mnt</span></div>
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Downtime</span>
+        <div class="text-xl md:text-2xl font-black text-rose-600 mt-1">
+          <span id="stat-downtime">0</span> <span class="text-xs text-slate-500 font-normal">Mnt</span>
+        </div>
         <p class="text-[10px] text-slate-400">Akumulasi perbaikan</p>
       </div>
       <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
-        <span class="text-[10px] font-bold text-slate-400 uppercase">MTTR Aktual</span>
-        <div class="text-xl md:text-2xl font-black text-blue-600 mt-1"><span id="stat-mttr">0.0</span> <span class="text-xs text-slate-500 font-normal">Mnt</span></div>
-        <p class="text-[10px] text-slate-400">Rata-rata waktu repair</p>
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">MTTR Rata-Rata</span>
+        <div class="text-xl md:text-2xl font-black text-blue-600 mt-1">
+          <span id="stat-mttr">0.0</span> <span class="text-xs text-slate-500 font-normal">Mnt</span>
+        </div>
+        <p class="text-[10px] text-slate-400">Mean Time to Repair</p>
       </div>
       <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
-        <span class="text-[10px] font-bold text-slate-400 uppercase">Availability</span>
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Equipment Availability</span>
         <div id="stat-avail" class="text-xl md:text-2xl font-black text-emerald-600 mt-1">100%</div>
-        <p class="text-[10px] text-slate-400">Tingkat kesiapan lini</p>
+        <p class="text-[10px] text-slate-400">Kesiapan lini operasi</p>
       </div>
     </div>
 
-    <!-- Konten Utama: Form & Logbook -->
+    <!-- Layout Form & Tabel Rekap -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
 
-      <!-- Form Input -->
+      <!-- Form Penginputan -->
       <div class="lg:col-span-5 bg-white p-4 md:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
         <div class="flex items-center justify-between border-b pb-2.5">
           <h2 class="text-xs md:text-sm font-bold text-slate-800 flex items-center gap-1.5">
             <i class="ph ph-note-pencil text-blue-600 text-base"></i> Input Log Kerusakan Mesin
           </h2>
-          <span class="text-[10px] px-2 py-0.5 bg-blue-50 text-blue-700 font-semibold rounded">Form Teknisi</span>
+          <span class="text-[10px] px-2 py-0.5 bg-blue-50 text-blue-700 font-semibold rounded">Teknisi GA</span>
         </div>
 
         <form id="repairForm" onsubmit="submitForm(event)" class="space-y-3">
+          <!-- Tanggal & Shift -->
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Tanggal</label>
-              <input type="date" id="formDate" required class="w-full text-xs px-2.5 py-2 border rounded-lg bg-slate-50" />
+              <input type="date" id="formDate" required class="w-full text-xs px-2.5 py-2 border rounded-lg bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div>
-              <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Shift</label>
-              <select id="formShift" class="w-full text-xs px-2.5 py-2 border rounded-lg bg-slate-50">
+              <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Work Operation (Shift)</label>
+              <select id="formShift" class="w-full text-xs px-2.5 py-2 border rounded-lg bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="S1">S1 (Shift 1)</option>
                 <option value="S2">S2 (Shift 2)</option>
                 <option value="S3">S3 (Shift 3)</option>
+                <option value="NS">Non-Shift</option>
               </select>
             </div>
           </div>
 
-          <!-- Hierarki Mesin Bertingkat -->
+          <!-- Hierarki Aset: Area -> Line -> Station -> Machine -->
           <div class="space-y-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
             <div class="grid grid-cols-2 gap-2">
               <div>
                 <label class="block text-[10px] font-bold text-slate-600 uppercase">Area</label>
-                <select id="formArea" onchange="onAreaChange()" required class="w-full text-xs p-1.5 border rounded bg-white">
-                  <option value="">-- Area --</option>
+                <select id="formArea" onchange="onAreaChange()" required class="w-full text-xs p-1.5 border rounded bg-white outline-none focus:ring-1 focus:ring-blue-500">
+                  <option value="">-- Pilih Area --</option>
                   <option value="TRIM 1">TRIM 1</option>
                   <option value="TRIM 2">TRIM 2</option>
                   <option value="DOOR LINE">DOOR LINE</option>
@@ -102,8 +124,8 @@
               </div>
               <div>
                 <label class="block text-[10px] font-bold text-slate-600 uppercase">Line</label>
-                <select id="formLine" onchange="onLineChange()" required class="w-full text-xs p-1.5 border rounded bg-white">
-                  <option value="">-- Line --</option>
+                <select id="formLine" onchange="onLineChange()" required class="w-full text-xs p-1.5 border rounded bg-white outline-none focus:ring-1 focus:ring-blue-500">
+                  <option value="">-- Pilih Line --</option>
                 </select>
               </div>
             </div>
@@ -111,23 +133,23 @@
             <div class="grid grid-cols-2 gap-2">
               <div>
                 <label class="block text-[10px] font-bold text-slate-600 uppercase">Station</label>
-                <select id="formStation" onchange="onStationChange()" required class="w-full text-xs p-1.5 border rounded bg-white">
-                  <option value="">-- Station --</option>
+                <select id="formStation" onchange="onStationChange()" required class="w-full text-xs p-1.5 border rounded bg-white outline-none focus:ring-1 focus:ring-blue-500">
+                  <option value="">-- Pilih Station --</option>
                 </select>
               </div>
               <div>
                 <label class="block text-[10px] font-bold text-slate-600 uppercase">Machine</label>
-                <select id="formMachine" required class="w-full text-xs p-1.5 border rounded bg-white">
-                  <option value="">-- Machine --</option>
+                <select id="formMachine" required class="w-full text-xs p-1.5 border rounded bg-white outline-none focus:ring-1 focus:ring-blue-500">
+                  <option value="">-- Pilih Machine --</option>
                 </select>
               </div>
             </div>
           </div>
 
-          <!-- Input Durasi (Menit) -->
+          <!-- Rincian Waktu Perbaikan (Menit) -->
           <div class="border border-slate-200 rounded-xl p-2.5 bg-blue-50/20 space-y-1.5">
             <div class="flex justify-between items-center text-xs font-bold text-slate-700">
-              <span>Waktu Perbaikan (Menit)</span>
+              <span>Rincian Repair Time (Menit)</span>
               <span class="text-amber-800 bg-amber-100 px-2 py-0.5 rounded text-[11px]">
                 Total: <strong id="sumTotalRepair">3</strong> mnt
               </span>
@@ -160,15 +182,15 @@
           <div class="grid grid-cols-3 gap-2">
             <div>
               <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">PIC Local</label>
-              <input type="text" id="picLocal" placeholder="Teknisi" required class="w-full text-xs p-1.5 border rounded" />
+              <input type="text" id="picLocal" placeholder="Nama teknisi" required class="w-full text-xs p-1.5 border rounded outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
             <div>
               <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">PIC VMT</label>
-              <input type="text" id="picVmt" placeholder="VMT" class="w-full text-xs p-1.5 border rounded" />
+              <input type="text" id="picVmt" placeholder="Nama VMT" class="w-full text-xs p-1.5 border rounded outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
             <div>
               <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Status</label>
-              <select id="statusRepair" class="w-full text-xs p-1.5 border rounded bg-white">
+              <select id="statusRepair" class="w-full text-xs p-1.5 border rounded bg-white outline-none focus:ring-1 focus:ring-blue-500">
                 <option value="OK">OK</option>
                 <option value="MONITORING">MONITORING</option>
                 <option value="NG">NG</option>
@@ -177,7 +199,7 @@
           </div>
 
           <button type="submit" id="btnSubmit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5">
-            <i class="ph ph-cloud-arrow-up text-base"></i> Simpan ke Server Pusat
+            <i class="ph ph-floppy-disk text-base"></i> Simpan Data Log Perbaikan
           </button>
         </form>
       </div>
@@ -185,24 +207,31 @@
       <!-- Live Log Table -->
       <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
         <div class="p-3.5 border-b bg-slate-50 flex justify-between items-center">
-          <h3 class="font-bold text-xs uppercase tracking-wider text-slate-700">Database Log Masuk</h3>
-          <span class="text-[11px] text-slate-500">Auto-update setiap 30 detik</span>
+          <div>
+            <h3 class="font-bold text-xs uppercase tracking-wider text-slate-700">Database Log Masuk</h3>
+            <p class="text-[10px] text-slate-400">Tersinkronisasi antar perangkat</p>
+          </div>
+          <span class="text-xs text-slate-500 font-semibold">
+            Total: <strong id="tableTotalRows" class="text-blue-600 font-bold">0</strong> baris
+          </span>
         </div>
 
-        <div class="overflow-x-auto flex-1 max-h-[500px]">
+        <div class="overflow-x-auto flex-1 max-h-[520px]">
           <table class="w-full text-left text-xs">
-            <thead class="bg-slate-100 text-slate-600 sticky top-0 border-b">
+            <thead class="bg-slate-100 text-slate-600 sticky top-0 border-b z-10">
               <tr>
+                <th class="p-2">No</th>
                 <th class="p-2">Shift</th>
                 <th class="p-2">Area / Line</th>
                 <th class="p-2">Machine</th>
                 <th class="p-2 text-center">Downtime</th>
                 <th class="p-2">PIC</th>
                 <th class="p-2">Status</th>
+                <th class="p-2 text-center">Aksi</th>
               </tr>
             </thead>
             <tbody id="tableBody" class="divide-y divide-slate-100">
-              <tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat data dari server...</td></tr>
+              <tr><td colspan="8" class="p-6 text-center text-slate-400">Memuat data...</td></tr>
             </tbody>
           </table>
         </div>
@@ -213,32 +242,70 @@
   </main>
 
   <script>
-    // MASUKKAN URL HASIL DEPLOY GOOGLE APPS SCRIPT ANDA DI SINI:
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLui_hrn5mz5wS0wuvQZo_Vr5YFMfd3xOi4XSRvTPVEBDlE2TSDnu5KM1RTB5b209Q/exec";
+    // -------------------------------------------------------------
+    // KONFIGURASI DATABASE CLOUD
+    // Tempelkan URL Google Apps Script Anda di sini. 
+    // Jika masih kosong, sistem otomatis memakai penyimpanan lokal (LocalStorage).
+    // -------------------------------------------------------------
+    const GOOGLE_SCRIPT_URL = "ISI_DENGAN_URL_WEB_APP_GOOGLE_ANDA";
 
+    // Master Data Hierarki GA Sesuai Excel
     const masterHierarchy = {
-      "TRIM 1": { lines: ["Trim 1"], stations: { "Trim 1": ["TL8", "TL10", "Loading"] }, machines: { "TL8": ["Conveyor Trim"], "TL10": ["Lifter Trim 1"], "Loading": ["Hopper"] } },
-      "TRIM 2": { lines: ["Trim 2"], stations: { "Trim 2": ["Loading", "TL16", "Unloading"] }, machines: { "Loading": ["Load Lift"], "TL16": ["Lifter Door 6"], "Unloading": ["Transfer Roller"] } },
-      "DOOR LINE": { lines: ["Doorline"], stations: { "Doorline": ["Loading", "Doorline"] }, machines: { "Loading": ["Lifter Door 4"], "Doorline": ["Hanger Door 28"] } },
-      "CHASSIS": { lines: ["Chassis 1", "Chassis 2"], stations: { "Chassis 1": ["CH8", "CH9"], "Chassis 2": ["CH9", "CH10"] }, machines: { "CH8": ["Hanger No 6"], "CH9": ["Hanger No 17", "Hanger No 3", "Hanger No 2"], "CH10": ["Drop Lifter"] } },
-      "PRE MARRIAGE": { lines: ["PM"], stations: { "PM": ["PM1", "PM3", "PM5", "PM6"] }, machines: { "PM1": ["AGV No 3"], "PM3": ["AGV No 5", "AGV No 7"], "PM5": ["AGV No 5"], "PM6": ["AGV No 4"] } },
-      "FINAL": { lines: ["Final"], stations: { "Final": ["Loading", "Unloading", "Tester"] }, machines: { "Unloading": ["Travers Motor"], "Loading": ["Shuttle Car"], "Tester": ["Brake Tester"] } }
+      "TRIM 1": { 
+        lines: ["Trim 1"], 
+        stations: { "Trim 1": ["TL8", "TL10", "Loading"] }, 
+        machines: { "TL8": ["Conveyor Trim"], "TL10": ["Lifter Trim 1"], "Loading": ["Hopper"] } 
+      },
+      "TRIM 2": { 
+        lines: ["Trim 2"], 
+        stations: { "Trim 2": ["Loading", "TL16", "Unloading"] }, 
+        machines: { "Loading": ["Load Lift"], "TL16": ["Lifter Door 6"], "Unloading": ["Transfer Roller"] } 
+      },
+      "DOOR LINE": { 
+        lines: ["Doorline"], 
+        stations: { "Doorline": ["Loading", "Doorline"] }, 
+        machines: { "Loading": ["Lifter Door 4"], "Doorline": ["Hanger Door 28"] } 
+      },
+      "CHASSIS": { 
+        lines: ["Chassis 1", "Chassis 2"], 
+        stations: { "Chassis 1": ["CH8", "CH9"], "Chassis 2": ["CH9", "CH10"] }, 
+        machines: { "CH8": ["Hanger No 6"], "CH9": ["Hanger No 17", "Hanger No 3", "Hanger No 2"], "CH10": ["Drop Lifter"] } 
+      },
+      "PRE MARRIAGE": { 
+        lines: ["PM"], 
+        stations: { "PM": ["PM1", "PM3", "PM5", "PM6"] }, 
+        machines: { "PM1": ["AGV No 3"], "PM3": ["AGV No 5", "AGV No 7"], "PM5": ["AGV No 5"], "PM6": ["AGV No 4"] } 
+      },
+      "FINAL": { 
+        lines: ["Final"], 
+        stations: { "Final": ["Loading", "Unloading", "Tester"] }, 
+        machines: { "Unloading": ["Travers Motor"], "Loading": ["Shuttle Car"], "Tester": ["Brake Tester"] } 
+      }
     };
 
     let dataset = [];
 
+    // Inisialisasi awal saat halaman dimuat
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('formDate').valueAsDate = new Date();
       fetchCloudData();
-      setInterval(fetchCloudData, 30000); // Polling otomatis setiap 30 detik
+      // Polling setiap 30 detik jika Google Script URL sudah diisi
+      if (isCloudConfigured()) {
+        setInterval(fetchCloudData, 30000);
+      }
     });
 
+    function isCloudConfigured() {
+      return GOOGLE_SCRIPT_URL && !GOOGLE_SCRIPT_URL.includes("ISI_DENGAN_URL");
+    }
+
+    // Cascading Dropdown Handlers
     function onAreaChange() {
       const a = document.getElementById('formArea').value;
       const l = document.getElementById('formLine');
-      l.innerHTML = '<option value="">-- Line --</option>';
-      document.getElementById('formStation').innerHTML = '<option value="">-- Station --</option>';
-      document.getElementById('formMachine').innerHTML = '<option value="">-- Machine --</option>';
+      l.innerHTML = '<option value="">-- Pilih Line --</option>';
+      document.getElementById('formStation').innerHTML = '<option value="">-- Pilih Station --</option>';
+      document.getElementById('formMachine').innerHTML = '<option value="">-- Pilih Machine --</option>';
 
       if (a && masterHierarchy[a]) {
         masterHierarchy[a].lines.forEach(line => l.innerHTML += `<option value="${line}">${line}</option>`);
@@ -253,8 +320,8 @@
       const a = document.getElementById('formArea').value;
       const l = document.getElementById('formLine').value;
       const s = document.getElementById('formStation');
-      s.innerHTML = '<option value="">-- Station --</option>';
-      document.getElementById('formMachine').innerHTML = '<option value="">-- Machine --</option>';
+      s.innerHTML = '<option value="">-- Pilih Station --</option>';
+      document.getElementById('formMachine').innerHTML = '<option value="">-- Pilih Machine --</option>';
 
       if (l && masterHierarchy[a]?.stations[l]) {
         masterHierarchy[a].stations[l].forEach(st => s.innerHTML += `<option value="${st}">${st}</option>`);
@@ -269,7 +336,7 @@
       const a = document.getElementById('formArea').value;
       const s = document.getElementById('formStation').value;
       const m = document.getElementById('formMachine');
-      m.innerHTML = '<option value="">-- Machine --</option>';
+      m.innerHTML = '<option value="">-- Pilih Machine --</option>';
 
       if (s && masterHierarchy[a]?.machines[s]) {
         masterHierarchy[a].machines[s].forEach(mac => m.innerHTML += `<option value="${mac}">${mac}</option>`);
@@ -279,52 +346,61 @@
       }
     }
 
+    // Hitung Total Menit Perbaikan Otomatis
     function calcTotal() {
-      const sum = (parseFloat(document.getElementById('timeAnalysis').value) || 0) +
-                  (parseFloat(document.getElementById('timePart').value) || 0) +
-                  (parseFloat(document.getElementById('timeTool').value) || 0) +
-                  (parseFloat(document.getElementById('timeExec').value) || 0) +
-                  (parseFloat(document.getElementById('timeTrial').value) || 0);
-      document.getElementById('sumTotalRepair').textContent = sum;
-      return sum;
+      const a = parseFloat(document.getElementById('timeAnalysis').value) || 0;
+      const p = parseFloat(document.getElementById('timePart').value) || 0;
+      const t = parseFloat(document.getElementById('timeTool').value) || 0;
+      const e = parseFloat(document.getElementById('timeExec').value) || 0;
+      const tr = parseFloat(document.getElementById('timeTrial').value) || 0;
+      const total = a + p + t + e + tr;
+      document.getElementById('sumTotalRepair').textContent = total;
+      return total;
     }
 
-    // Mengambil data dari cloud
+    // Ambil Data (dari Cloud atau LocalStorage)
     async function fetchCloudData() {
       const badge = document.getElementById('cloud-badge');
       const syncIcon = document.getElementById('sync-icon');
       syncIcon.classList.add('animate-spin');
 
-      if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("ISI_DENGAN_URL")) {
-        badge.textContent = "Mode Offline (URL Belum Diset)";
-        badge.className = "px-2 py-0.5 text-[10px] rounded font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30";
+      if (!isCloudConfigured()) {
+        // Mode offline/lokal
+        dataset = JSON.parse(localStorage.getItem('ga_maintenance_logs')) || [];
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-400"></span><span>Mode LocalStorage</span>`;
+        badge.className = "px-2.5 py-1 text-[10px] rounded font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center gap-1";
         syncIcon.classList.remove('animate-spin');
+        renderUI();
         return;
       }
 
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL);
         const data = await res.json();
-        dataset = data.reverse(); // data terbaru di atas
-        badge.textContent = "Online Cloud Connected";
-        badge.className = "px-2 py-0.5 text-[10px] rounded font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+        dataset = Array.isArray(data) ? data.reverse() : [];
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>Cloud Connected</span>`;
+        badge.className = "px-2.5 py-1 text-[10px] rounded font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1";
         renderUI();
       } catch (err) {
-        badge.textContent = "Gagal Sinkronisasi";
-        badge.className = "px-2 py-0.5 text-[10px] rounded font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30";
+        // Jika fetch cloud gagal, baca cache lokal
+        dataset = JSON.parse(localStorage.getItem('ga_maintenance_logs')) || [];
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-400"></span><span>Cloud Offline (Local Mode)</span>`;
+        badge.className = "px-2.5 py-1 text-[10px] rounded font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center gap-1";
+        renderUI();
       } finally {
         syncIcon.classList.remove('animate-spin');
       }
     }
 
-    // Mengirim data baru dari perangkat mana saja ke server cloud
+    // Simpan Data Form
     async function submitForm(e) {
       e.preventDefault();
       const btn = document.getElementById('btnSubmit');
       btn.disabled = true;
-      btn.innerHTML = `<i class="ph ph-spinner animate-spin text-base"></i> Mengirim ke Cloud...`;
+      btn.innerHTML = `<i class="ph ph-spinner animate-spin text-base"></i> Menyimpan...`;
 
-      const payload = {
+      const newRecord = {
+        id: Date.now(),
         date: document.getElementById('formDate').value,
         shift: document.getElementById('formShift').value,
         area: document.getElementById('formArea').value,
@@ -343,55 +419,136 @@
         netHours: 7
       };
 
-      try {
-        await fetch(GOOGLE_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors', // Penting untuk bypass CORS Google Apps Script
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+      // Simpan selalu ke LocalStorage (sebagai cadangan)
+      let localData = JSON.parse(localStorage.getItem('ga_maintenance_logs')) || [];
+      localData.unshift(newRecord);
+      localStorage.setItem('ga_maintenance_logs', JSON.stringify(localData));
 
-        alert("Data berhasil tersimpan di server pusat!");
-        // Refresh tabel
-        setTimeout(fetchCloudData, 1000);
-      } catch (err) {
-        alert("Gagal mengirim data. Periksa koneksi internet.");
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = `<i class="ph ph-cloud-arrow-up text-base"></i> Simpan ke Server Pusat`;
+      if (isCloudConfigured()) {
+        try {
+          await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newRecord)
+          });
+          alert("Berhasil! Data tersimpan di server pusat.");
+          setTimeout(fetchCloudData, 1200);
+        } catch (err) {
+          alert("Koneksi gagal, data tetap aman tersimpan di memori perangkat ini.");
+          fetchCloudData();
+        }
+      } else {
+        alert("Data berhasil disimpan ke memori lokal!");
+        fetchCloudData();
       }
+
+      // Reset form ringan
+      document.getElementById('timeExec').value = "2";
+      document.getElementById('timePart').value = "0";
+      document.getElementById('timeTool').value = "0";
+      document.getElementById('timeTrial').value = "0";
+      calcTotal();
+
+      btn.disabled = false;
+      btn.innerHTML = `<i class="ph ph-floppy-disk text-base"></i> Simpan Data Log Perbaikan`;
     }
 
+    // Hapus baris catatan lokal
+    function deleteRecord(id) {
+      if (!confirm("Hapus baris catatan ini dari tampilan?")) return;
+      dataset = dataset.filter(r => r.id !== id);
+      localStorage.setItem('ga_maintenance_logs', JSON.stringify(dataset));
+      renderUI();
+    }
+
+    // Perbarui Tampilan UI & KPI
     function renderUI() {
-      // 1. Update KPI
       const count = dataset.length;
-      const totalDown = dataset.reduce((s, d) => s + (d.total || 0), 0);
+      const totalDown = dataset.reduce((s, d) => s + (Number(d.total) || 0), 0);
+
+      document.getElementById('tableTotalRows').textContent = count;
       document.getElementById('stat-count').textContent = count;
       document.getElementById('stat-downtime').textContent = totalDown;
       document.getElementById('stat-mttr').textContent = count > 0 ? (totalDown / count).toFixed(1) : 0;
 
+      // Hitung Availability (asumsi 7 jam / shift unik)
       const uniqueShifts = new Set(dataset.map(d => `${d.date}_${d.shift}`)).size || 1;
       const plannedHours = uniqueShifts * 7;
       const avail = plannedHours > 0 ? (100 - ((totalDown / 60) / plannedHours * 100)).toFixed(1) : 100;
       document.getElementById('stat-avail').textContent = `${avail}%`;
 
-      // 2. Render Tabel
+      // Render Baris Tabel
       const tbody = document.getElementById('tableBody');
       if (dataset.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada catatan di database pusat.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-slate-400">Belum ada data rekaman. Silakan lakukan input pertama di form kiri.</td></tr>';
         return;
       }
 
-      tbody.innerHTML = dataset.map(d => `
+      tbody.innerHTML = dataset.map((d, idx) => `
         <tr class="hover:bg-slate-50 transition border-b">
+          <td class="p-2 text-slate-400 font-mono">${dataset.length - idx}</td>
           <td class="p-2 font-semibold text-slate-700">${d.shift}</td>
-          <td class="p-2"><span class="font-bold text-slate-800">${d.area}</span> <span class="text-[10px] text-slate-400">(${d.line})</span></td>
-          <td class="p-2 font-medium text-slate-800">${d.machine}</td>
+          <td class="p-2">
+            <span class="font-bold text-slate-800">${d.area}</span>
+            <div class="text-[10px] text-slate-400">${d.line}</div>
+          </td>
+          <td class="p-2 font-medium text-slate-800">
+            <div>${d.machine}</div>
+            <div class="text-[10px] text-slate-400">St: ${d.station}</div>
+          </td>
           <td class="p-2 text-center font-bold text-rose-600">${d.total} mnt</td>
-          <td class="p-2 text-slate-600">${d.picLocal}</td>
-          <td class="p-2"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${d.status === 'OK' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${d.status}</span></td>
+          <td class="p-2 text-slate-600">
+            <div>${d.picLocal}</div>
+            <div class="text-[10px] text-slate-400">VMT: ${d.picVmt}</div>
+          </td>
+          <td class="p-2">
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${d.status === 'OK' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
+              ${d.status}
+            </span>
+          </td>
+          <td class="p-2 text-center">
+            <button onclick="deleteRecord(${d.id})" class="text-slate-400 hover:text-rose-600 transition" title="Hapus">
+              <i class="ph ph-trash text-base"></i>
+            </button>
+          </td>
         </tr>
       `).join('');
+    }
+
+    // Fungsi Export Excel Standar General Assembly
+    function exportDataToExcel() {
+      if (!dataset || dataset.length === 0) {
+        alert("Belum ada data untuk diekspor!");
+        return;
+      }
+
+      const rowsToExport = dataset.map((item, index) => ({
+        "NO": index + 1,
+        "DATE": item.date,
+        "AREA": item.area,
+        "LINE": item.line,
+        "STATION": item.station,
+        "MACHINE": item.machine,
+        "REPAIR TIME Analysis (menit)": item.analysis || 0,
+        "REPAIR TIME Part preparation (menit)": item.partPrep || 0,
+        "REPAIR TIME Tool preparation (menit)": item.toolPrep || 0,
+        "REPAIR TIME Execution (menit)": item.execution || 0,
+        "REPAIR TIME Trial (menit)": item.trial || 0,
+        "REPAIR TIME TOTAL (menit)": item.total || 0,
+        "PIC LOCAL": item.picLocal || "-",
+        "PIC VMT": item.picVmt || "-",
+        "Status": item.status || "OK",
+        "WORK OPERATION": item.shift || "S1",
+        "Total Net Working Hour": item.netHours || 7
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(rowsToExport);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "DATA REPAIR TIME GA");
+
+      const today = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(workbook, `REKAP_REPAIR_TIME_GA_${today}.xlsx`);
     }
   </script>
 </body>
