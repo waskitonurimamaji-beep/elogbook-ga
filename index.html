@@ -150,17 +150,17 @@
           <div class="space-y-2 bg-amber-50/50 p-2.5 rounded-xl border border-amber-200">
             <div>
               <label class="block text-[10px] font-bold text-amber-900 uppercase">PROBLEM (Masalah / Gejala)</label>
-              <textarea id="formProblem" rows="2" placeholder="Contoh: Baut macet / sensor proximity error" required
+              <textarea id="formProblem" rows="2" placeholder="Contoh: Baut macet / sensor error" required
                         class="w-full text-xs p-2 border rounded-lg bg-white outline-none focus:ring-1 focus:ring-amber-500"></textarea>
             </div>
             <div>
               <label class="block text-[10px] font-bold text-amber-900 uppercase">ROOT ANALISYS (Akar Penyebab)</label>
-              <textarea id="formRoot" rows="2" placeholder="Contoh: Kabel sensor terjepit kotoran"
+              <textarea id="formRoot" rows="2" placeholder="Contoh: Kabel sensor terjepit"
                         class="w-full text-xs p-2 border rounded-lg bg-white outline-none focus:ring-1 focus:ring-amber-500"></textarea>
             </div>
             <div>
-              <label class="block text-[10px] font-bold text-amber-900 uppercase">COUNTERMEASURE (Tindakan Penanggulangan)</label>
-              <textarea id="formCounter" rows="2" placeholder="Contoh: Ganti kabel sensor & pasang pelindung"
+              <label class="block text-[10px] font-bold text-amber-900 uppercase">COUNTERMEASURE (Tindakan)</label>
+              <textarea id="formCounter" rows="2" placeholder="Contoh: Reset HMI & atur posisi kabel"
                         class="w-full text-xs p-2 border rounded-lg bg-white outline-none focus:ring-1 focus:ring-amber-500"></textarea>
             </div>
           </div>
@@ -227,8 +227,8 @@
       <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
         <div class="p-3.5 border-b bg-slate-50 flex justify-between items-center">
           <div>
-            <h3 class="font-bold text-xs uppercase tracking-wider text-slate-700">Database Log Masuk</h3>
-            <p class="text-[10px] text-slate-400">Rekap problem, root cause & repair time (Urutan 1, 2, ...)</p>
+            <h3 class="font-bold text-xs uppercase tracking-wider text-slate-700">DATABASE LOG MASUK</h3>
+            <p class="text-[10px] text-slate-400">Rekap problem, root cause & repair time (Urut 1, 2, ...)</p>
           </div>
           <span class="text-xs text-slate-500 font-semibold">
             Total: <strong id="tableTotalRows" class="text-blue-600 font-bold">0</strong> baris
@@ -262,8 +262,10 @@
   </main>
 
   <script>
+    // URL Google Apps Script Anda
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzv_OHYhYRpi1_C1z4xsRet0_Ynoxpz97W0QzhM8G1Cjry2VFX0NF5uRXWvzh8H2mKV/exec";
 
+    // Master Hierarchy
     const masterHierarchy = {
       "TRIM 1": { lines: ["Trim 1"], stations: { "Trim 1": ["TL8", "TL10", "Loading"] }, machines: { "TL8": ["Conveyor Trim"], "TL10": ["Lifter Trim 1"], "Loading": ["Hopper"] } },
       "TRIM 2": { lines: ["Trim 2"], stations: { "Trim 2": ["Loading", "TL16", "Unloading"] }, machines: { "Loading": ["Load Lift"], "TL16": ["Lifter Door 6"], "Unloading": ["Transfer Roller"] } },
@@ -278,10 +280,10 @@
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('formDate').valueAsDate = new Date();
       fetchCloudData();
-      setInterval(fetchCloudData, 30000);
+      setInterval(fetchCloudData, 30000); // Sinkronisasi otomatis setiap 30 detik
     });
 
-    // Cascading Dropdowns
+    // Cascading dropdowns
     function onAreaChange() {
       const a = document.getElementById('formArea').value;
       const l = document.getElementById('formLine');
@@ -339,7 +341,7 @@
       return total;
     }
 
-    // PENGAMBILAN DATA DENGAN JSONP (URUTAN DARI ATAS KE BAWAH: 1, 2, 3...)
+    // Ambil Data: Menggunakan JSONP untuk Bypass CORS / Mode Incognito
     function fetchCloudData() {
       const badge = document.getElementById('cloud-badge');
       const syncIcon = document.getElementById('sync-icon');
@@ -352,7 +354,7 @@
         const oldScript = document.getElementById(callbackName);
         if (oldScript) oldScript.remove();
 
-        // Menyimpan data sesuai urutan kronologis asli dari Google Sheets (tanpa .reverse)
+        // Data disimpan langsung dari baris atas ke bawah (No 1, 2, 3...)
         dataset = Array.isArray(data) ? data : [];
         badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>Cloud Connected</span>`;
         badge.className = "px-2.5 py-1 text-[10px] rounded font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1";
@@ -378,7 +380,7 @@
       document.body.appendChild(script);
     }
 
-    // SUBMIT FORM KE GOOGLE SHEETS
+    // Simpan Data Log Baru
     async function submitForm(e) {
       e.preventDefault();
       const btn = document.getElementById('btnSubmit');
@@ -408,7 +410,7 @@
         netHours: 7
       };
 
-      // Simpan backup ke LocalStorage
+      // Backup ke penyimpanan lokal
       let localData = JSON.parse(localStorage.getItem('ga_maintenance_logs')) || [];
       localData.push({ ...payload, sheetRowIndex: Date.now() });
       localStorage.setItem('ga_maintenance_logs', JSON.stringify(localData));
@@ -424,11 +426,11 @@
         alert("Data berhasil tersimpan ke Google Sheets!");
         setTimeout(fetchCloudData, 1500);
       } catch (err) {
-        alert("Gagal terhubung langsung, data tersimpan di perangkat lokal.");
+        alert("Gagal terhubung ke Google Sheets, data tersimpan di penyimpanan cadangan lokal.");
         fetchCloudData();
       }
 
-      // Reset form
+      // Reset isian teks
       document.getElementById('formProblem').value = "";
       document.getElementById('formRoot').value = "";
       document.getElementById('formCounter').value = "";
@@ -442,7 +444,7 @@
       btn.innerHTML = `<i class="ph ph-floppy-disk text-base"></i> Simpan Data Log Perbaikan`;
     }
 
-    // HAPUS BARIS DATA PERMANEN
+    // Hapus baris dari Google Sheets
     async function deleteRecord(sheetRowIndex) {
       if (!confirm("Hapus baris catatan ini secara permanen dari database Google Sheets?")) return;
 
@@ -458,12 +460,12 @@
         });
         setTimeout(fetchCloudData, 1500);
       } catch (err) {
-        alert("Gagal mengirim perintah hapus.");
+        alert("Gagal menghapus di cloud.");
         fetchCloudData();
       }
     }
 
-    // RENDER UI DENGAN PENOMORAN URUT 1, 2, 3...
+    // Render Tampilan (Nomor Dimulai dari 1, 2, 3...)
     function renderUI() {
       const count = dataset.length;
       const totalDown = dataset.reduce((s, d) => s + (Number(d.total) || 0), 0);
@@ -510,7 +512,7 @@
             </span>
           </td>
           <td class="p-2 text-center">
-            <button onclick="deleteRecord(${d.sheetRowIndex})" class="text-slate-400 hover:text-rose-600 transition" title="Hapus Permanen dari Google Sheets">
+            <button onclick="deleteRecord(${d.sheetRowIndex})" class="text-slate-400 hover:text-rose-600 transition" title="Hapus Data">
               <i class="ph ph-trash text-base"></i>
             </button>
           </td>
@@ -518,6 +520,7 @@
       `).join('');
     }
 
+    // Export langsung ke file .xlsx
     function exportDataToExcel() {
       if (!dataset || dataset.length === 0) {
         alert("Belum ada data untuk diekspor!");
@@ -556,4 +559,4 @@
     }
   </script>
 </body>
-</html>F
+</html>
