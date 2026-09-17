@@ -90,21 +90,21 @@
         </div>
 
         <form id="repairForm" onsubmit="submitForm(event)" class="space-y-3">
-          <!-- WAKTU REAL-TIME: Tanggal, Time (Jam:Menit), & Shift -->
+          <!-- WAKTU: Tanggal, Time (Jam:Menit), & Shift -->
           <div class="grid grid-cols-3 gap-2">
             <div>
               <label class="block text-[10px] font-bold text-slate-600 mb-0.5 uppercase">DATE</label>
-              <input type="date" id="formDate" required class="w-full text-xs px-2 py-1.5 border rounded-lg bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500" />
+              <input type="date" id="formDate" required class="w-full text-xs px-2.5 py-1.5 border rounded-lg bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div>
               <label class="block text-[10px] font-bold text-blue-600 mb-0.5 uppercase flex items-center gap-0.5">
                 <i class="ph ph-clock text-xs"></i> TIME
               </label>
-              <input type="time" id="formTime" required class="w-full text-xs px-2 py-1.5 border border-blue-300 rounded-lg bg-blue-50/50 font-semibold text-blue-900 outline-none focus:ring-2 focus:ring-blue-500" />
+              <input type="time" id="formTime" required class="w-full text-xs px-2.5 py-1.5 border border-blue-300 rounded-lg bg-blue-50/50 font-semibold text-blue-900 outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-600 mb-0.5 uppercase">SHIFT</label>
-              <select id="formShift" class="w-full text-xs px-2 py-1.5 border rounded-lg bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500">
+              <select id="formShift" class="w-full text-xs px-2.5 py-1.5 border rounded-lg bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="S1">S1 (Shift 1)</option>
                 <option value="S2">S2 (Shift 2)</option>
                 <option value="S3">S3 (Shift 3)</option>
@@ -268,7 +268,7 @@
   </main>
 
   <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzVhM5yBCT1QwsqUnQdVyBiEdIn4mLFvImoCWcyzawOSG0UW6Veey3IDHAtS--5ns39/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-YLC4zZHfLZwBgtSqc_NJcjg5GTgd-2eCVQ9o1liy541Azw9yBI9xeSOSZZObPcUo/exec";
 
     const masterHierarchy = {
       "TRIM 1": { lines: ["Trim 1"], stations: { "Trim 1": ["TL8", "TL10", "Loading"] }, machines: { "TL8": ["Conveyor Trim"], "TL10": ["Lifter Trim 1"], "Loading": ["Hopper"] } },
@@ -281,7 +281,6 @@
 
     let dataset = [];
 
-    // Mengisi waktu sekarang otomatis (HH:MM)
     function setRealTimeClock() {
       const now = new Date();
       document.getElementById('formDate').valueAsDate = now;
@@ -296,7 +295,6 @@
       setInterval(fetchCloudData, 30000);
     });
 
-    // Cascading dropdowns
     function onAreaChange() {
       const a = document.getElementById('formArea').value;
       const l = document.getElementById('formLine');
@@ -436,11 +434,10 @@
         alert("Data berhasil tersimpan ke Google Sheets!");
         setTimeout(fetchCloudData, 1500);
       } catch (err) {
-        alert("Gagal terhubung ke cloud, data disimpan di perangkat lokal.");
+        alert("Gagal terhubung ke cloud, data tersimpan di perangkat lokal.");
         fetchCloudData();
       }
 
-      // Reset form & update waktu terkini
       document.getElementById('formProblem').value = "";
       document.getElementById('formRoot').value = "";
       document.getElementById('formCounter').value = "";
@@ -497,6 +494,7 @@
 
       tbody.innerHTML = dataset.map((d, idx) => `
         <tr class="hover:bg-slate-50 transition border-b align-top">
+          <!-- Nomor berurutan dari 1, 2, 3 ke bawah -->
           <td class="p-2 text-slate-500 font-bold font-mono">${idx + 1}</td>
           <td class="p-2">
             <div class="font-bold text-blue-700 flex items-center gap-1">
